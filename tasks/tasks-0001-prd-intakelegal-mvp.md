@@ -5,7 +5,7 @@
 - `web/theme.ts` - Brand palette and theme tokens.
 - `web/tailwind.config.ts` - Tailwind configuration extended with brand colors, radius, shadows.
 - `web/postcss.config.js` - Tailwind/PostCSS setup.
-- `web/next.config.ts` - Next.js configuration.
+- `web/next.config.mjs` - Next.js configuration.
 - `web/styles/globals.css` - Tailwind base and gradient header CSS.
 - `web/lib/api.ts` - Helper to call backend using SERVER_BASE_URL.
 - `web/app/builder/page.tsx` - Form builder UI (presets, toggles, reorder, retention, publish).
@@ -73,21 +73,21 @@
   - [x] 3.3 Require GDPR consent checkbox to enable Submit; include consent text.
   - [x] 3.4 POST to `/api/intake/:slug/submit` using `web/lib/api.ts` and handle success state.
 
-- [ ] 4.0 Backend API and services
-  - [ ] 4.1 Implement `server/src/routes/forms.ts`: create/update form instance and publish (returns slug).
-  - [ ] 4.2 Implement `server/src/routes/intake.ts`: submit intake → AI (summarise/classify/follow-ups) + SOL → persist.
-  - [ ] 4.3 Implement `server/src/routes/dashboard.ts`: list intakes with filters (area, urgency, date, status) sorted by createdAt desc.
-  - [ ] 4.4 Build `services/ai.ts` with OpenAI client and deterministic mocks when no `OPENAI_API_KEY`.
-  - [ ] 4.5 Build `services/sol.ts` with Irish v1 mapping, expiry calc, badge thresholding, basis string, disclaimer.
-  - [ ] 4.6 Build `services/pdf.ts` for PDF export; add DOCX placeholder response.
-  - [ ] 4.7 Build `services/email.ts` to send client confirmation and internal summary; mock if no `RESEND_API_KEY`.
-  - [ ] 4.8 Implement in-memory store fallback when `DATABASE_URL` is absent; add basic audit logs (console/memory).
+- [x] 4.0 Backend API and services
+  - [x] 4.1 Implement `server/src/routes/forms.ts`: create/update form instance and publish (returns slug).
+  - [x] 4.2 Implement `server/src/routes/intake.ts`: submit intake → AI (summarise/classify/follow-ups) + SOL → persist.
+  - [x] 4.3 Implement `server/src/routes/dashboard.ts`: list intakes with filters (area, urgency, date, status) sorted by createdAt desc.
+  - [x] 4.4 Build `services/ai.ts` with OpenAI client and deterministic mocks when no `OPENAI_API_KEY`.
+  - [x] 4.5 Build `services/sol.ts` with Irish v1 mapping, expiry calc, badge thresholding, basis string, disclaimer.
+  - [x] 4.6 Build `services/pdf.ts` for PDF export; add DOCX placeholder response.
+  - [x] 4.7 Build `services/email.ts` to send client confirmation and internal summary; mock if no `RESEND_API_KEY`.
+  - [x] 4.8 Implement in-memory store fallback when `DATABASE_URL` is absent; add basic audit logs (console/memory).
 
-- [ ] 5.0 Prisma schema and seed
-  - [ ] 5.1 Define `schema.prisma` models per PRD.
-  - [ ] 5.2 Generate Prisma client and wire `prisma/client.ts`.
-  - [ ] 5.3 Seed demo firm, templates, form instance (`slug:"demo"`), and a sample intake in `seed.ts`.
-  - [ ] 5.4 Make routes use Prisma when `DATABASE_URL` is set; fallback to memory otherwise.
+- [x] 5.0 Prisma schema and seed
+  - [x] 5.1 Define `schema.prisma` models per PRD.
+  - [x] 5.2 Generate Prisma client and wire `prisma/client.ts`.
+  - [x] 5.3 Seed demo firm, templates, form instance (`slug:"demo"`), and a sample intake in `seed.ts`.
+  - [x] 5.4 Make routes use Prisma when `DATABASE_URL` is set; fallback to memory otherwise.
 
 - [ ] 6.0 Dashboard (lawyer side)
   - [ ] 6.1 Render Matter Cards: name/date/area/badge/status using `Badge` and `Card` components.
