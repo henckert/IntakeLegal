@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
 import { apiGet } from "../../lib/api";
@@ -28,12 +28,28 @@ function getDate(i: Item): string {
 export default function DashboardPage() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [area, setArea] = useState<string>("");
+  const [urgency, setUrgency] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [from, setFrom] = useState<string>("");
+  const [to, setTo] = useState<string>("");
+
+  const query = useMemo(() => {
+    const params = new URLSearchParams();
+    if (area) params.set("area", area);
+    if (urgency) params.set("urgency", urgency);
+    if (status) params.set("status", status);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    const s = params.toString();
+    return s ? `?${s}` : "";
+  }, [area, urgency, status, from, to]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const data = await apiGet<{ items: Item[] }>("/api/dashboard/intakes");
+        const data = await apiGet<{ items: Item[] }>(`/api/dashboard/intakes${query}`);
         if (!cancelled) setItems(data.items);
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? "Failed to load dashboard");
@@ -42,7 +58,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [query]);
 
   return (
     <div className="mx-auto max-w-5xl p-6">
@@ -54,6 +70,39 @@ export default function DashboardPage() {
       {error ? (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
       ) : null}
+
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-5">
+        <div>
+          <label className="mb-1 block text-xs text-text-secondary">Area</label>
+          <input className="w-full rounded-2xl border border-slate-300 px-3 py-1.5 text-sm" value={area} onChange={(e) => setArea(e.target.value)} placeholder="PI, Contract, ..." />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-text-secondary">Urgency</label>
+          <select className="w-full rounded-2xl border border-slate-300 px-3 py-1.5 text-sm" value={urgency} onChange={(e) => setUrgency(e.target.value)}>
+            <option value="">Any</option>
+            <option value="red">Red</option>
+            <option value="amber">Amber</option>
+            <option value="green">Green</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-text-secondary">Status</label>
+          <select className="w-full rounded-2xl border border-slate-300 px-3 py-1.5 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">Any</option>
+            <option value="new">New</option>
+            <option value="in-review">In Review</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-text-secondary">From</label>
+          <input type="date" className="w-full rounded-2xl border border-slate-300 px-3 py-1.5 text-sm" value={from} onChange={(e) => setFrom(e.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-text-secondary">To</label>
+          <input type="date" className="w-full rounded-2xl border border-slate-300 px-3 py-1.5 text-sm" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+      </div>
 
       {!items ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
