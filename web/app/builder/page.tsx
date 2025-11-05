@@ -159,7 +159,9 @@ export default function BuilderPage() {
                     onChange={() => toggleSection(s.key as SectionKey)}
                   />
                   <span>{s.label}</span>
-                  <Tooltip text="Toggle whether this appears on the client form." />
+                  <Tooltip text="Toggle whether this appears on the client form.">
+                    <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 text-[10px] text-slate-600">?</span>
+                  </Tooltip>
                 </label>
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={() => move(s.key as SectionKey, -1)}>
