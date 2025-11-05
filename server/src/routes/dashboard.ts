@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import { db } from '../store/memory.js';
+import { db } from '../store/index.js';
 import { z } from 'zod';
 
 const FilterQuery = z.object({
@@ -11,12 +11,12 @@ const FilterQuery = z.object({
 
 const router = Router();
 
-router.get('/api/dashboard/intakes', (req: Request, res: Response) => {
+router.get('/api/dashboard/intakes', async (req: Request, res: Response) => {
   const parsed = FilterQuery.safeParse(req.query);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   const { area, urgency, from, to } = parsed.data;
 
-  let items = Array.from(db.intakes.values());
+  let items = await db.intakes.values();
 
   if (area) items = items.filter((i) => i.ai.classification.toLowerCase().includes(area.toLowerCase()));
   if (urgency) items = items.filter((i) => i.sol.badge === urgency);

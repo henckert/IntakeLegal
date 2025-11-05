@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { db } from '../store/memory.js';
+import { db } from '../store/index.js';
 import { runAI } from '../services/ai.js';
 import { computeSOL } from '../services/sol.js';
 import { sendIntakePDF } from '../services/pdf.js';
@@ -17,7 +17,7 @@ const UIShape = z.object({
 
 router.post('/api/intake/:slug/submit', async (req: Request, res: Response) => {
   const slug = req.params.slug;
-  const form = db.findFormBySlug(slug) ?? { id: `form_${slug}`, slug, firmId: 'demo', templateId: 'demo', published: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as any;
+  const form = (await db.findFormBySlug(slug)) ?? { id: `form_${slug}`, slug, firmId: 'demo', templateId: 'demo', published: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as any;
 
   let clientName = '';
   let contactJSON: Record<string, any> = {};
@@ -42,7 +42,7 @@ router.post('/api/intake/:slug/submit', async (req: Request, res: Response) => {
   const sol = computeSOL(claimType ?? ai.classification, eventDate);
 
   const id = `intake_${Math.random().toString(36).slice(2, 10)}`;
-  db.intakes.set(id, {
+  await db.intakes.set(id, {
     id,
     formId: (form as any).id,
     slug,
@@ -61,20 +61,24 @@ router.post('/api/intake/:slug/submit', async (req: Request, res: Response) => {
 });
 
 router.get('/api/intakes/:id/export.pdf', async (req: Request, res: Response) => {
-  const i = db.intakes.get(req.params.id);
+  const i = await db.intakes.get(req.params.id);
   if (!i) return res.status(404).json({ error: 'Not found' });
+  // Support both memory shape and Prisma shape
+  const classification = (i as any).ai?.classification ?? (i as any).aiClassification;
+  const expiryDate = (i as any).sol?.expiryDate ?? (i as any).solExpiryDate;
+  const badge = (i as any).sol?.badge ?? (i as any).solBadge;
   sendIntakePDF(res, {
-    id: i.id,
-    clientName: i.clientName,
-    classification: i.ai.classification,
-    expiryDate: i.sol.expiryDate,
-    badge: i.sol.badge,
-    narrative: i.narrative,
+    id: (i as any).id,
+    clientName: (i as any).clientName,
+    classification,
+    expiryDate: expiryDate ? String(expiryDate) : undefined,
+    badge,
+    narrative: (i as any).narrative,
   });
 });
 
 router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) => {
-  const i = db.intakes.get(req.params.id);
+  const i = await db.intakes.get(req.params.id);
   if (!i) return res.status(404).json({ error: 'Not found' });
   return res.status(501).json({ message: 'DOCX export is not implemented in MVP' });
 });

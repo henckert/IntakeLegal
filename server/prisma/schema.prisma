@@ -1,0 +1,58 @@
+// Prisma schema for IntakeLegal MVP
+// Run: npx prisma migrate dev --name init (with DATABASE_URL set)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FormInstance {
+  id              String   @id @default(cuid())
+  firmId          String
+  templateId      String
+  slug            String   @unique
+  published       Boolean  @default(false)
+  themeJSON       Json?
+  retentionPolicy String?
+  schemaJSON      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  intakes         Intake[]
+}
+
+model Intake {
+  id             String   @id @default(cuid())
+  formId         String
+  slug           String
+  clientName     String
+  contactJSON    Json
+  narrative      String
+  eventDatesJSON String[]
+  consent        Boolean
+  aiSummary      String
+  aiClassification String
+  aiFollowUps    Json
+  solExpiryDate  DateTime?
+  solDaysRemaining Int?
+  solBadge       String?
+  solBasis       String?
+  solDisclaimer  String?
+  status         String   @default("new")
+  createdAt      DateTime @default(now())
+
+  form           FormInstance @relation(fields: [formId], references: [id], onDelete: Cascade)
+  @@index([slug])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  meta      Json
+  createdAt DateTime @default(now())
+}
