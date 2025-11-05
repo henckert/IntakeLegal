@@ -97,7 +97,7 @@
   - [x] 6.5 Protect route with Clerk.
 
 - [ ] 7.0 Auth & compliance
-  - [ ] 7.1 Integrate Clerk on web; secure `/builder` and `/dashboard` routes.
+  - [x] 7.1 Integrate Clerk on web; secure `/builder` and `/dashboard` routes.
   - [ ] 7.2 Forward firm context or auth claims to server on protected requests.
   - [ ] 7.3 Ensure GDPR consent stored with intake; enforce retention selector in builder UI.
 

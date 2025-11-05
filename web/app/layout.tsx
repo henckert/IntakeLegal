@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import { Inter, DM_Serif_Display } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' });
@@ -9,15 +10,30 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const isLocal = process.env.NEXT_PUBLIC_APP_ENV === 'local';
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY;
   return (
     <html lang="en">
       <body className={`${inter.variable} ${dmSerif.variable} min-h-screen bg-background text-text-primary`}>
-        <header className="header-gradient text-white">
-          <div className="mx-auto max-w-5xl px-6 py-4">
-            <a href="/" className="font-bold text-xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
-          </div>
-        </header>
-        <main className="mx-auto max-w-5xl px-6 py-6">{children}</main>
+        {isLocal || !publishableKey ? (
+          <>
+            <header className="header-gradient text-white">
+              <div className="mx-auto max-w-5xl px-6 py-4">
+                <a href="/" className="font-bold text-xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
+              </div>
+            </header>
+            <main className="mx-auto max-w-5xl px-6 py-6">{children}</main>
+          </>
+        ) : (
+          <ClerkProvider publishableKey={publishableKey}>
+            <header className="header-gradient text-white">
+              <div className="mx-auto max-w-5xl px-6 py-4">
+                <a href="/" className="font-bold text-xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
+              </div>
+            </header>
+            <main className="mx-auto max-w-5xl px-6 py-6">{children}</main>
+          </ClerkProvider>
+        )}
       </body>
     </html>
   );
