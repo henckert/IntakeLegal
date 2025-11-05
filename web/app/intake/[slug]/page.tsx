@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Stepper from "@/components/Stepper";
-import Card from "@/components/Card";
-import Tooltip from "@/components/Tooltip";
-import Input from "@/components/ui/Input";
-import TextArea from "@/components/ui/TextArea";
-import Select from "@/components/ui/Select";
-import Button from "@/components/ui/Button";
-import { apiPost } from "@/lib/api";
+import Stepper from "../../../components/Stepper";
+import Card from "../../../components/Card";
+import Tooltip from "../../../components/Tooltip";
+import Input from "../../../components/ui/Input";
+import TextArea from "../../../components/ui/TextArea";
+import Select from "../../../components/ui/Select";
+import Button from "../../../components/ui/Button";
+import { apiPost } from "../../../lib/api";
 
 const CLAIM_TYPES = [
   "Personal Injury",

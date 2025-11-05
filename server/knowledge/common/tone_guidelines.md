@@ -1,0 +1,1 @@
+Tone: professional, concise, empathetic. Avoid legalese where possible. Explain clearly and suggest next steps.

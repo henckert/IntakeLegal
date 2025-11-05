@@ -1,0 +1,4 @@
+{
+  "required": ["incident_date", "location", "injuries"],
+  "optional": ["witnesses", "reference_numbers"]
+}
