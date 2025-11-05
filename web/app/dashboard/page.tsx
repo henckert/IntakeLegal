@@ -29,6 +29,7 @@ function getDate(i: Item): string {
 }
 
 export default function DashboardPage() {
+  const SERVER_BASE = process.env.NEXT_PUBLIC_SERVER_BASE_URL || "http://localhost:4000";
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -38,6 +39,16 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<string>("");
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
+
+  function openPDF(id: string) {
+    const url = `${SERVER_BASE}/api/intakes/${id}/export.pdf`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  function openDOCX(id: string) {
+    // DOCX export is not implemented in MVP; surface a friendly notice.
+    alert("DOCX export is coming soon in this MVP.");
+  }
 
   const query = useMemo(() => {
     const params = new URLSearchParams();
@@ -143,6 +154,24 @@ export default function DashboardPage() {
                   <span className="font-medium text-text-primary">Status:</span>
                   <span>{i.status ?? "new"}</span>
                 </div>
+              </div>
+
+              {/* Export actions */}
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <Button
+                  variant="outline"
+                  className="h-8 px-3 text-xs"
+                  onClick={() => openPDF(i.id)}
+                >
+                  Open PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-8 px-3 text-xs opacity-70"
+                  onClick={() => openDOCX(i.id)}
+                >
+                  DOCX (soon)
+                </Button>
               </div>
 
               {/* Summary section */}
