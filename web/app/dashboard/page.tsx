@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button";
 import TextArea from "../../components/ui/TextArea";
 import { apiPost } from "../../lib/api";
 import { apiGet } from "../../lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 type Item = any;
 
@@ -39,6 +40,7 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<string>("");
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
+  const { getToken } = useAuth();
 
   function openPDF(id: string) {
     const url = `${SERVER_BASE}/api/intakes/${id}/export.pdf`;
@@ -65,7 +67,8 @@ export default function DashboardPage() {
     let cancelled = false;
     (async () => {
       try {
-        const data = await apiGet<{ items: Item[] }>(`/api/dashboard/intakes${query}`);
+        const token = await getToken().catch(() => undefined);
+        const data = await apiGet<{ items: Item[] }>(`/api/dashboard/intakes${query}`, { token: token ?? undefined });
         if (!cancelled) setItems(data.items);
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? "Failed to load dashboard");
@@ -218,7 +221,8 @@ export default function DashboardPage() {
                         className="h-8 px-3 text-xs"
                         onClick={async () => {
                           try {
-                            await apiPost(`/api/intakes/${i.id}/summary`, { summary: draft });
+                            const token = await getToken().catch(() => undefined);
+                            await apiPost(`/api/intakes/${i.id}/summary`, { summary: draft }, { token: token ?? undefined });
                             // Optimistically update local state
                             setItems((prev) =>
                               prev?.map((x) =>

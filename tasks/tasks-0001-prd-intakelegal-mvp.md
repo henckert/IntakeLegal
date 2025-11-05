@@ -98,7 +98,7 @@
 
 - [ ] 7.0 Auth & compliance
   - [x] 7.1 Integrate Clerk on web; secure `/builder` and `/dashboard` routes.
-  - [ ] 7.2 Forward firm context or auth claims to server on protected requests.
+  - [x] 7.2 Forward firm context or auth claims to server on protected requests.
   - [ ] 7.3 Ensure GDPR consent stored with intake; enforce retention selector in builder UI.
 
 - [ ] 8.0 Dev experience & docs

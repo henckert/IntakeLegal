@@ -8,6 +8,7 @@ import Select from '../../components/ui/Select';
 import Card from '../../components/Card';
 import Tooltip from '../../components/Tooltip';
 import { apiPost } from '../../lib/api';
+import { useAuth } from '@clerk/nextjs';
 
 const ALL_SECTIONS = [
   { key: 'clientInfo', label: 'Client Info' },
@@ -40,6 +41,7 @@ function Protected({ children }: { children: React.ReactNode }) {
 }
 
 export default function BuilderPage() {
+  const { getToken } = useAuth();
   const [vertical, setVertical] = useState<Vertical>('PI');
   const [sections, setSections] = useState<SectionKey[]>([
     'clientInfo',
@@ -82,6 +84,7 @@ export default function BuilderPage() {
       const schemaJSON = { vertical, sections };
 
       // Minimal payload to server; server may create IDs for firm/template in mock mode
+      const token = await getToken().catch(() => undefined);
       const form = await apiPost<{ id: string }>(
         '/api/forms',
         {
@@ -92,8 +95,9 @@ export default function BuilderPage() {
           retentionPolicy: retention,
           schemaJSON,
         },
+        { token: token ?? undefined },
       );
-      const pub = await apiPost<{ slug: string }>(`/api/forms/${form.id}/publish`, {});
+      const pub = await apiPost<{ slug: string }>(`/api/forms/${form.id}/publish`, {}, { token: token ?? undefined });
       setPublishedSlug(pub.slug);
     } catch (e: any) {
       setError(e.message ?? 'Failed to publish');
