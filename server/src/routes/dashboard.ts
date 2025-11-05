@@ -19,6 +19,25 @@ router.get('/api/dashboard/intakes', async (req: Request, res: Response) => {
 
   let items = await db.intakes.values();
 
+  // Enforce retention policy per form: hide items older than retentionDays (default 90)
+  const withinRetention = async (i: any) => {
+    try {
+      const form = await db.forms.get(i.formId);
+      const keepDays = Number((form as any)?.retentionPolicy ?? '90');
+      const created = new Date(i.createdAt);
+      const cutoff = new Date(Date.now() - keepDays * 24 * 60 * 60 * 1000);
+      return created >= cutoff;
+    } catch {
+      return true; // fail-open
+    }
+  };
+  const kept: any[] = [];
+  for (const it of items) {
+    // eslint-disable-next-line no-await-in-loop
+    if (await withinRetention(it)) kept.push(it);
+  }
+  items = kept;
+
   if (area) items = items.filter((i) => i.ai.classification.toLowerCase().includes(area.toLowerCase()));
   if (urgency) items = items.filter((i) => i.sol.badge === urgency);
   if (from) items = items.filter((i) => i.createdAt >= from);

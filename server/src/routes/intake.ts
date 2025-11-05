@@ -63,6 +63,16 @@ router.post('/api/intake/:slug/submit', async (req: Request, res: Response) => {
 router.get('/api/intakes/:id/export.pdf', async (req: Request, res: Response) => {
   const i = await db.intakes.get(req.params.id);
   if (!i) return res.status(404).json({ error: 'Not found' });
+  // Retention enforcement: block export if beyond retention window
+  try {
+    const form = await db.forms.get((i as any).formId);
+    const keepDays = Number((form as any)?.retentionPolicy ?? '90');
+    const created = new Date((i as any).createdAt);
+    const cutoff = new Date(Date.now() - keepDays * 24 * 60 * 60 * 1000);
+    if (!(created >= cutoff)) {
+      return res.status(410).json({ error: 'Export unavailable: data expired per retention policy.' });
+    }
+  } catch {}
   // Support both memory shape and Prisma shape
   const classification = (i as any).ai?.classification ?? (i as any).aiClassification;
   const expiryDate = (i as any).sol?.expiryDate ?? (i as any).solExpiryDate;
@@ -80,6 +90,16 @@ router.get('/api/intakes/:id/export.pdf', async (req: Request, res: Response) =>
 router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) => {
   const i = await db.intakes.get(req.params.id);
   if (!i) return res.status(404).json({ error: 'Not found' });
+  // Retention enforcement: block export if beyond retention window
+  try {
+    const form = await db.forms.get((i as any).formId);
+    const keepDays = Number((form as any)?.retentionPolicy ?? '90');
+    const created = new Date((i as any).createdAt);
+    const cutoff = new Date(Date.now() - keepDays * 24 * 60 * 60 * 1000);
+    if (!(created >= cutoff)) {
+      return res.status(410).json({ error: 'Export unavailable: data expired per retention policy.' });
+    }
+  } catch {}
   return res.status(501).json({ message: 'DOCX export is not implemented in MVP' });
 });
 
