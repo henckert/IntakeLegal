@@ -102,11 +102,11 @@
   - [x] 7.3 Ensure GDPR consent stored with intake; enforce retention selector in builder UI.
 
 - [ ] 8.0 Dev experience & docs
-  - [ ] 8.1 Finish README with exact local run steps and URLs; confirm `.env.example` keys.
-  - [ ] 8.2 Ensure `npm run dev` starts web:3000 and server:4000; add `/health` endpoint.
-  - [ ] 8.3 Verify local-first mocks: AI, SOL, email, PDF; document behavior.
+  - [x] 8.1 Finish README with exact local run steps and URLs; confirm `.env.example` keys.
+  - [x] 8.2 Ensure `npm run dev` starts web:3000 and server:4000; add `/health` endpoint.
+  - [x] 8.3 Verify local-first mocks: AI, SOL, email, PDF; document behavior.
 
 - [ ] 9.0 QA & push
   - [ ] 9.1 Manual sanity: publish a form, complete public demo, verify dashboard, badges, export PDF, and email mocks.
-  - [ ] 9.2 Initialize git (if needed), add remote `https://github.com/henckert/IntakeLegal.git`.
-  - [ ] 9.3 Commit and push to `main`.
+  - [x] 9.2 Initialize git (if needed), add remote `https://github.com/henckert/IntakeLegal.git`.
+  - [x] 9.3 Commit and push to `main`.
