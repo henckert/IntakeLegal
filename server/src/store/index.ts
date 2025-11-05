@@ -53,8 +53,9 @@ class PrismaIntakes {
   async set(id: string, data: any) {
     const prisma = getPrisma();
     if (!prisma) return memory.intakes.set(id, data);
-    await prisma.intake.create({
-      data: {
+    await prisma.intake.upsert({
+      where: { id },
+      create: {
         id,
         formId: data.formId,
         slug: data.slug,
@@ -73,6 +74,24 @@ class PrismaIntakes {
         solDisclaimer: data.sol?.disclaimer ?? null,
         status: data.status ?? 'new',
       },
+      update: {
+        formId: data.formId,
+        slug: data.slug,
+        clientName: data.clientName,
+        contactJSON: data.contactJSON,
+        narrative: data.narrative,
+        eventDatesJSON: data.eventDatesJSON ?? [],
+        consent: data.consent ?? true,
+        aiSummary: data.ai?.summary ?? undefined,
+        aiClassification: data.ai?.classification ?? undefined,
+        aiFollowUps: data.ai?.followUps ?? undefined,
+        solExpiryDate: data.sol?.expiryDate ? new Date(data.sol.expiryDate) : undefined,
+        solDaysRemaining: data.sol?.daysRemaining ?? undefined,
+        solBadge: data.sol?.badge ?? undefined,
+        solBasis: data.sol?.basis ?? undefined,
+        solDisclaimer: data.sol?.disclaimer ?? undefined,
+        status: data.status ?? undefined,
+      },
     });
   }
   async values() {
@@ -80,6 +99,18 @@ class PrismaIntakes {
     if (!prisma) return Array.from(memory.intakes.values());
     const all = await prisma.intake.findMany();
     return all as any[];
+  }
+  async updateSummary(id: string, summary: string) {
+    const prisma = getPrisma();
+    if (!prisma) {
+      const cur = memory.intakes.get(id);
+      if (cur) {
+        (cur as any).ai = { ...(cur as any).ai, summary };
+        memory.intakes.set(id, cur);
+      }
+      return;
+    }
+    await prisma.intake.update({ where: { id }, data: { aiSummary: summary } });
   }
 }
 

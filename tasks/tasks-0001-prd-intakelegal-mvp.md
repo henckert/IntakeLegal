@@ -92,7 +92,7 @@
 - [ ] 6.0 Dashboard (lawyer side)
   - [x] 6.1 Render Matter Cards: name/date/area/badge/status using `Badge` and `Card` components.
   - [x] 6.2 Add filters: area, urgency (badge), date range, status; default sort createdAt desc.
-  - [ ] 6.3 Editable AI summary panel with save.
+  - [x] 6.3 Editable AI summary panel with save.
   - [ ] 6.4 Export buttons that call export PDF/DOCX endpoints.
   - [ ] 6.5 Protect route with Clerk.
 

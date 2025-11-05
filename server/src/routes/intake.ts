@@ -84,3 +84,16 @@ router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) =
 });
 
 export default router;
+
+// Update AI summary (editable in dashboard)
+router.post('/api/intakes/:id/summary', async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { summary } = (req.body ?? {}) as { summary?: string };
+  if (!summary || summary.trim().length < 5) {
+    return res.status(400).json({ error: 'Summary must be at least 5 characters.' });
+  }
+  const exists = await db.intakes.get(id);
+  if (!exists) return res.status(404).json({ error: 'Not found' });
+  await db.intakes.updateSummary(id, summary.trim());
+  return res.json({ ok: true, summary: summary.trim() });
+});

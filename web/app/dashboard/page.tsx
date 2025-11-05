@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
+import Button from "../../components/ui/Button";
+import TextArea from "../../components/ui/TextArea";
+import { apiPost } from "../../lib/api";
 import { apiGet } from "../../lib/api";
 
 type Item = any;
@@ -28,6 +31,8 @@ function getDate(i: Item): string {
 export default function DashboardPage() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState<string>("");
   const [area, setArea] = useState<string>("");
   const [urgency, setUrgency] = useState<string>("");
   const [status, setStatus] = useState<string>("");
@@ -138,6 +143,61 @@ export default function DashboardPage() {
                   <span className="font-medium text-text-primary">Status:</span>
                   <span>{i.status ?? "new"}</span>
                 </div>
+              </div>
+
+              {/* Summary section */}
+              <div className="mt-4">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-sm font-medium text-text-primary">AI Summary</span>
+                  {editing === i.id ? null : (
+                    <Button
+                      variant="outline"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        const current = (i?.ai?.summary ?? i?.aiSummary ?? "") as string;
+                        setDraft(current);
+                        setEditing(i.id);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
+                {editing === i.id ? (
+                  <div className="space-y-2">
+                    <TextArea rows={5} value={draft} onChange={(e) => setDraft(e.target.value)} />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        className="h-8 px-3 text-xs"
+                        onClick={async () => {
+                          try {
+                            await apiPost(`/api/intakes/${i.id}/summary`, { summary: draft });
+                            // Optimistically update local state
+                            setItems((prev) =>
+                              prev?.map((x) =>
+                                x.id === i.id
+                                  ? { ...x, ai: { ...(x.ai ?? {}), summary: draft }, aiSummary: draft }
+                                  : x,
+                              ) ?? prev,
+                            );
+                            setEditing(null);
+                          } catch (e: any) {
+                            alert(e?.message ?? "Failed to save summary");
+                          }
+                        }}
+                      >
+                        Save
+                      </Button>
+                      <Button variant="outline" className="h-8 px-3 text-xs" onClick={() => setEditing(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm text-text-secondary">
+                    {(i?.ai?.summary ?? i?.aiSummary ?? "No summary yet.") as string}
+                  </p>
+                )}
               </div>
             </Card>
           ))}
