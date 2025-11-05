@@ -94,7 +94,7 @@
   - [x] 6.2 Add filters: area, urgency (badge), date range, status; default sort createdAt desc.
   - [x] 6.3 Editable AI summary panel with save.
   - [x] 6.4 Export buttons that call export PDF/DOCX endpoints.
-  - [ ] 6.5 Protect route with Clerk.
+  - [x] 6.5 Protect route with Clerk.
 
 - [ ] 7.0 Auth & compliance
   - [ ] 7.1 Integrate Clerk on web; secure `/builder` and `/dashboard` routes.

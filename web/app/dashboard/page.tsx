@@ -76,6 +76,23 @@ export default function DashboardPage() {
     };
   }, [query]);
 
+  function Protected({ children }: { children: React.ReactNode }) {
+    const isLocal = process.env.NEXT_PUBLIC_APP_ENV === 'local';
+    if (!isLocal) {
+      return (
+        <div className="mx-auto max-w-3xl">
+          <Card className="p-6">
+            <h2 className="heading-serif text-xl">Sign-in required</h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              Please sign in to access the Dashboard. (Clerk integration pending in MVP.)
+            </p>
+          </Card>
+        </div>
+      );
+    }
+    return <>{children}</>;
+  }
+
   return (
     <div className="mx-auto max-w-5xl p-6">
       <header className="mb-6 flex items-center justify-between">
@@ -87,6 +104,7 @@ export default function DashboardPage() {
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>
       ) : null}
 
+      <Protected>
       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-5">
         <div>
           <label className="mb-1 block text-xs text-text-secondary">Area</label>
@@ -232,6 +250,7 @@ export default function DashboardPage() {
           ))}
         </div>
       )}
+      </Protected>
     </div>
   );
 }
