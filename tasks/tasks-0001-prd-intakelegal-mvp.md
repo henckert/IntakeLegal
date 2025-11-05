@@ -59,7 +59,7 @@
   - [x] 1.6 Create shared components: `Card`, `Badge` (red/amber/green), `Tooltip`, `Stepper`.
   - [x] 1.7 Create `(marketing)/page.tsx` with gradient header and CTA to `/builder`.
 
-- [ ] 2.0 Builder (firm side)
+- [x] 2.0 Builder (firm side)
   - [x] 2.1 Implement presets: PI, Litigation, Family, Conveyancing, Commercial, Employment.
   - [x] 2.2 Add section toggles: client info, contact, narrative/query, attachments, AI.
   - [x] 2.3 Implement simple up/down reordering for sections (no drag in MVP).
@@ -67,11 +67,11 @@
   - [x] 2.5 Hook Publish to `POST /api/forms` then `POST /api/forms/:id/publish`; display copyable public link `/intake/[slug]`.
   - [x] 2.6 Protect route with Clerk; show sign-in if unauthenticated.
 
-- [ ] 3.0 Public intake (client side)
-  - [ ] 3.1 Build Typeform-style stepper with progress and inline tooltips.
-  - [ ] 3.2 Capture client info, contact, narrative; event date(s) and claim type selector where applicable.
-  - [ ] 3.3 Require GDPR consent checkbox to enable Submit; include consent text.
-  - [ ] 3.4 POST to `/api/intake/:slug/submit` using `web/lib/api.ts` and handle success state.
+- [x] 3.0 Public intake (client side)
+  - [x] 3.1 Build Typeform-style stepper with progress and inline tooltips.
+  - [x] 3.2 Capture client info, contact, narrative; event date(s) and claim type selector where applicable.
+  - [x] 3.3 Require GDPR consent checkbox to enable Submit; include consent text.
+  - [x] 3.4 POST to `/api/intake/:slug/submit` using `web/lib/api.ts` and handle success state.
 
 - [ ] 4.0 Backend API and services
   - [ ] 4.1 Implement `server/src/routes/forms.ts`: create/update form instance and publish (returns slug).
