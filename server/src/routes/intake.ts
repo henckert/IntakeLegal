@@ -4,6 +4,9 @@ import { db } from '../store/index.js';
 import { runAI } from '../services/ai.js';
 import { computeSOL } from '../services/sol.js';
 import { sendIntakePDF } from '../services/pdf.js';
+import { sendEmail } from '../services/email.js';
+import { withTimeout } from '../lib/withTimeout.js';
+import { OPENAI_TIMEOUT_MS, EMAIL_TIMEOUT_MS, PDF_TIMEOUT_MS, DRY_RUN, HAS_OPENAI, HAS_EMAIL } from '../env.js';
 
 const router = Router();
 
@@ -16,48 +19,65 @@ const UIShape = z.object({
 });
 
 router.post('/api/intake/:slug/submit', async (req: Request, res: Response) => {
-  const slug = req.params.slug;
-  const form = (await db.findFormBySlug(slug)) ?? { id: `form_${slug}`, slug, firmId: 'demo', templateId: 'demo', published: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as any;
+  const phase = (name: string) => console.log(`[submit] ${name}`);
+  const t0 = Date.now();
+  phase('start');
 
-  let clientName = '';
-  let contactJSON: Record<string, any> = {};
-  let narrative = '';
-  let eventDate: string | undefined;
-  let claimType: string | undefined;
-  let consent = false;
+  // Body should be object if express.json ran; recover once if string:
+  if (typeof req.body === 'string') {
+    try { req.body = JSON.parse(req.body); phase('parsed string body'); }
+    catch (e) { return res.status(400).json({ error:'Bad JSON', detail:String(e) }); }
+  }
+  const body = req.body as any;
 
-  const uiTry = UIShape.safeParse(req.body);
-  if (!uiTry.success) return res.status(400).json({ error: 'Invalid intake payload' });
-  const d = uiTry.data;
-  clientName = `${d.client.firstName} ${d.client.lastName}`.trim();
-  contactJSON = { email: d.client.email, phone: d.client.phone, location: d.case.location };
-  narrative = d.case.narrative;
-  eventDate = d.case.eventDate;
-  claimType = d.case.claimType;
-  consent = d.consent.gdpr;
+  // DEV fast path: if no keys or DRY_RUN, return a mock immediately.
+  if (DRY_RUN || !HAS_OPENAI) {
+    phase('dry-run mock');
+    return res.status(200).json({
+      summaryText: 'MOCK: summary unavailable in DRY_RUN / missing OPENAI_API_KEY',
+      area: 'Personal Injury',
+      limitation: { expires: '2026-01-01', daysRemaining: 365 },
+      received: body,
+      meta: { dryRun: true, durMs: Date.now() - t0 }
+    });
+  }
 
-  if (!consent) return res.status(400).json({ error: 'GDPR consent required' });
+  try {
+    phase('ai:start');
+    // runAI returns { summary, classification, followUps }
+    const ai = await withTimeout(runAI(body.case?.narrative || ''), OPENAI_TIMEOUT_MS, 'openai.summary');
+    phase('ai:done');
 
-  const ai = await runAI(narrative);
-  const sol = computeSOL(claimType ?? ai.classification, eventDate);
+    phase('sol:start');
+    const sol = computeSOL(ai.classification, body.case?.eventDate);
+    phase('sol:done');
 
-  const id = `intake_${Math.random().toString(36).slice(2, 10)}`;
-  await db.intakes.set(id, {
-    id,
-    formId: (form as any).id,
-    slug,
-    clientName,
-    contactJSON,
-    narrative,
-    eventDatesJSON: eventDate ? [eventDate] : undefined,
-    consent: true,
-    ai,
-    sol,
-    status: 'new',
-    createdAt: new Date().toISOString(),
-  });
+    let emailId: string | undefined;
+    if (HAS_EMAIL && body.client?.email) {
+      phase('email:start');
+      try {
+        const to = body.client.email as string;
+        const subject = `New intake: ${body.slug ?? 'submission'}`;
+        const text = `${ai.summary}\n\nNarrative:\n${body.case?.narrative ?? ''}`;
+        await withTimeout(sendEmail({ to, subject, text }), EMAIL_TIMEOUT_MS, 'email.send');
+        emailId = `mock-email-${Date.now()}`;
+      } catch (e) {
+        console.warn('[submit] email failed', e);
+      }
+      phase('email:done');
+    } else {
+      phase('email:skipped');
+    }
 
-  return res.json({ intakeId: id });
+    // PDF export not implemented as URL in MVP; skip or generate on-demand in export endpoint
+    phase('pdf:skipped');
+
+    return res.status(200).json({ summaryText: ai.summary, area: ai.classification, limitation: sol, emailId, pdfUrl: undefined, meta: { durMs: Date.now() - t0 } });
+  } catch (e: any) {
+    console.error('[submit] failed', e);
+    const isTimeout = String(e?.message || e).includes('[timeout]');
+    return res.status(isTimeout ? 504 : 502).json({ error: isTimeout ? 'Gateway Timeout' : 'Upstream Error', detail: String(e) });
+  }
 });
 
 router.get('/api/intakes/:id/export.pdf', async (req: Request, res: Response) => {

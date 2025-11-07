@@ -1,7 +1,11 @@
 {
   "name": "intakelegal",
   "private": true,
-  "workspaces": ["web", "server", "shared"],
+  "workspaces": [
+    "web",
+    "server",
+    "shared"
+  ],
   "scripts": {
     "dev": "concurrently \"npm:dev:web\" \"npm:dev:server\"",
     "dev:web": "npm --workspace web run dev",
@@ -11,11 +15,14 @@
     "format": "prettier --write .",
     "prisma:generate": "npm --workspace server run prisma:generate",
     "prisma:migrate": "npm --workspace server run prisma:migrate",
-    "seed": "npm --workspace server run seed"
+    "seed": "npm --workspace server run seed",
+    "diag:cloud": "tsx tools/cloud-check.ts"
   },
   "devDependencies": {
+    "@types/node": "^24.10.0",
     "concurrently": "^9.0.1",
     "eslint": "^9.13.0",
+    "pg": "^8.16.3",
     "prettier": "^3.3.3",
     "typescript": "^5.6.3"
   }

@@ -11,3 +11,11 @@ export const ENV = {
   SERVER_BASE_URL: process.env.SERVER_BASE_URL || 'http://localhost:4000',
   NODE_ENV: process.env.NODE_ENV || 'development',
 };
+
+// Convenience timeout / feature flags
+export const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 8000);
+export const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS || 5000);
+export const PDF_TIMEOUT_MS = Number(process.env.PDF_TIMEOUT_MS || 5000);
+export const DRY_RUN = process.env.DRY_RUN === 'true';
+export const HAS_OPENAI = Boolean(process.env.OPENAI_API_KEY);
+export const HAS_EMAIL = Boolean(process.env.RESEND_API_KEY);
