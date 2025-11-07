@@ -81,6 +81,31 @@ Retention & compliance:
 - `npm run build` – build all workspaces
 - `npm run prisma:generate` / `npm run prisma:migrate` – Prisma helpers (delegates to `server/`)
 - `npm run seed` – seed demo data (delegates to `server/`)
+- `npm run diag:cloud` – verify cloud connectivity (API, Web, DB)
+
+## Deployment
+
+**Status:** 🟡 Ready for deployment
+
+See **`DEPLOYMENT.md`** for complete step-by-step instructions to deploy to:
+- **Neon** (PostgreSQL database)
+- **Render** (Express API server)
+- **Vercel** (Next.js web frontend)
+
+Quick links:
+- Neon: https://neon.tech
+- Render: https://render.com
+- Vercel: https://vercel.com
+
+Configuration files included:
+- `render.yaml` - Render deployment config
+- `vercel.json` - Vercel deployment config
+
+## Scripts
+- `npm run dev` – start web and server concurrently
+- `npm run build` – build all workspaces
+- `npm run prisma:generate` / `npm run prisma:migrate` – Prisma helpers (delegates to `server/`)
+- `npm run seed` – seed demo data (delegates to `server/`)
 
 ## PRDs and Task Lists
 - Place PRDs in `tasks/` named `0001-prd-<feature>.md`.
