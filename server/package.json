@@ -1,0 +1,49 @@
+{
+  "name": "@intakelegal/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --ignore '**/*.md' --ignore 'uploads/**' --ignore 'logs/**' --ignore '.next/**' src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "seed": "tsx src/prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx src/prisma/seed.ts"
+  },
+  "dependencies": {
+    "@clerk/express": "^1.7.45",
+    "@prisma/client": "^5.20.0",
+    "@types/multer": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+  "express": "^4.19.2",
+  "file-type": "^18.7.0",
+    "express-rate-limit": "^8.2.1",
+    "mailparser": "^3.9.0",
+    "mammoth": "^1.11.0",
+    "multer": "^2.0.2",
+    "openai": "^4.68.4",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.15.0",
+    "resend": "^3.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/mailparser": "^3.4.6",
+    "@types/node": "^20.11.30",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/pdfkit": "^0.13.6",
+    "prisma": "^5.20.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.3"
+  }
+}

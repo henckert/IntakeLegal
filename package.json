@@ -1,0 +1,40 @@
+{
+  "name": "intakelegal",
+  "private": true,
+  "workspaces": [
+    "web",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace web run dev",
+    "dev:server": "npm --workspace server run dev",
+    "dev:both": "concurrently -k --names \"server,web\" -c auto \"npm:dev:server\" \"npm:dev:web\"",
+    "dev": "npm run dev:both",
+    "test:health": "node -e \"require('http').get('http://localhost:4000/health',r=>process.exit(r.statusCode===200?0:1))\"",
+    "test:uploads": "node -e \"(async()=>{const r=await fetch('http://localhost:4000/api/uploads?limit=5'); if(!r.ok) process.exit(1); const j=await r.json(); console.log(JSON.stringify(j));})().catch(()=>process.exit(1))\"",
+    "dev:test:server": "node scripts/test-server.mjs",
+    "test:api": "node scripts/test-server.mjs",
+    "test:e2e": "playwright test",
+    "ci:e2e": "node scripts/e2e-runner.mjs",
+    "cleanup:uploads": "node scripts/cleanup-uploads.mjs",
+    "build": "npm --workspace shared run build && npm --workspace server run build && npm --workspace web run build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prisma:generate": "npm --workspace server run prisma:generate",
+    "prisma:migrate": "npm --workspace server run prisma:migrate",
+    "seed": "npm --workspace server run seed",
+    "diag:cloud": "tsx tools/cloud-check.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.13.0",
+    "pg": "^8.16.3",
+    "prettier": "^3.3.3",
+    "start-server-and-test": "^2.1.2",
+    "typescript": "^5.6.3",
+    "wait-on": "^7.2.0"
+  }
+}

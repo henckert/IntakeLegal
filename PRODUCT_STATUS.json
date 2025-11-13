@@ -1,0 +1,215 @@
+{
+  "sessionGoal": "Reposition IntakeLegal from 'form builder' to 'AI intake processor' with product-marketing and UX changes",
+  "branch": "feature/ai-intake-pipeline",
+  "lastCommit": "9b379e7 (E2E integration)",
+  "timestamp": "2025-01-15T12:00:00Z",
+  "completedTasks": {
+    "copyCentralization": {
+      "status": "✅ COMPLETE",
+      "file": "web/lib/copy.ts",
+      "description": "All marketing strings consolidated into single source of truth with nested sections for nav, home, workspace, cases, security, pricing, template builder"
+    },
+    "telemetryHooks": {
+      "status": "✅ COMPLETE",
+      "file": "web/lib/telemetry.ts",
+      "description": "Event tracking layer with safe no-op fallback. Track hero CTAs, workspace actions, summary signups. Enable by setting enabled flag to true"
+    },
+    "navigationRedesign": {
+      "status": "✅ COMPLETE",
+      "file": "web/components/Navigation.tsx",
+      "changes": [
+        "Workspace → Try It",
+        "Intakes → Cases",
+        "Added Security & GDPR route",
+        "Reordered: Try It, Cases, Pricing, Security & GDPR, Support, About",
+        "Removed Template Builder from nav"
+      ]
+    },
+    "securityPage": {
+      "status": "✅ COMPLETE",
+      "file": "web/app/security/page.tsx",
+      "route": "/security",
+      "sections": [
+        "Data Handling (TLS 1.3, AES-256, no training)",
+        "Retention (7-365 days)",
+        "Encryption (AES-256 at rest)",
+        "Sub-processors (OpenAI, Neon, Render with DPAs)",
+        "Data Residency (EU default, Firm plan pinning)",
+        "DPA (dpa@intakelegal.com for requests)"
+      ]
+    },
+    "homeHeroRedesign": {
+      "status": "✅ COMPLETE",
+      "file": "web/app/(marketing)/page.tsx",
+      "changes": [
+        "New H1: 'Turn messy client emails into structured legal intakes.'",
+        "New subtext: Upload → case summary, SOL estimate, follow-ups in <60s",
+        "Primary CTA: Upload a sample file (links to /workspace)",
+        "Secondary CTA: View sample case (links to /intakes/sample)",
+        "Feature cards: AI-Powered Extraction, SOL Check, Smart Follow-Ups",
+        "Telemetry: hero_cta_upload_clicked, hero_cta_sample_view_clicked"
+      ]
+    },
+    "sampleCasePage": {
+      "status": "✅ COMPLETE",
+      "file": "web/app/intakes/sample/page.tsx",
+      "route": "/intakes/sample",
+      "description": "Static sample case (John Smith PI case, M50 accident). Shows extractedData, summary, 4 clarification questions, 5 next steps, SOL analysis (2026-01-15, 428 days, green badge). CTA to /workspace"
+    },
+    "workspaceQuickActions": {
+      "status": "✅ COMPLETE",
+      "file": "web/app/workspace/page.tsx",
+      "features": [
+        "Sample file button: Generates sample intake text, converts to Blob → File, uploads",
+        "Paste email button: Opens modal for text input, converts to File, uploads",
+        "Paste modal: Full overlay with textarea, submit/cancel buttons",
+        "Privacy hint: '🔒 Files auto-deleted after 7 days. We never train on your data.'",
+        "Sticky CTA: Fixed bottom banner on upload success ('Save this case — Create free account')",
+        "Updated button text from COPY constants",
+        "Telemetry: workspace_upload_success, workspace_sample_file_used, workspace_paste_text_used, summary_view_signup_click"
+      ]
+    },
+    "casesSOLBadges": {
+      "status": "✅ COMPLETE",
+      "files": [
+        "web/app/intakes/page.tsx",
+        "web/app/intakes/[id]/page.tsx"
+      ],
+      "changes": [
+        "Cases list: Added lawArea tag, SOL badge (red/amber/green), confidence level",
+        "Case detail: Header shows lawArea badge, SOL badge with date and days remaining, confidence",
+        "Badge colors: red (<30d), amber (30-90d), green (>90d)",
+        "Improved styling with cards, shadows, better spacing"
+      ]
+    },
+    "templateBuilderAuthGate": {
+      "status": "✅ COMPLETE",
+      "file": "web/app/template-builder/page.tsx",
+      "changes": [
+        "Added isAuthenticated boolean flag (false for now)",
+        "Auth gate: Landing page with lock icon, heading, subtext, sign-in CTA",
+        "Preview panel: Always visible on right side with live sample data",
+        "Removed toggle button, preview renders automatically",
+        "Ready for Clerk integration (just set isAuthenticated = true)"
+      ]
+    },
+    "pricingUpdates": {
+      "status": "✅ COMPLETE",
+      "file": "web/app/pricing/page.tsx",
+      "changes": [
+        "Plans from COPY constants: Free (€0, 5/mo), Professional (€99, 100/mo), Firm (Custom, 500+/mo)",
+        "Added disclaimer banner: 'Human-in-the-loop review recommended'",
+        "Removed '95%+ Accuracy' claim",
+        "Replaced with 'Human-in-the-Loop' feature card",
+        "Firm plan CTA: 'Talk to Sales' (mailto:sales@intakelegal.com)"
+      ]
+    },
+    "buildVerification": {
+      "status": "✅ COMPLETE",
+      "result": "npm run build passed with no errors. All 16 routes compiled successfully. ESLint warning (useEslintrc) is non-blocking.",
+      "routes": [
+        "/",
+        "/about",
+        "/builder",
+        "/dashboard",
+        "/intake/[slug]",
+        "/intakes",
+        "/intakes/[id]",
+        "/intakes/sample",
+        "/pricing",
+        "/security",
+        "/sign-in",
+        "/sign-up",
+        "/support",
+        "/template-builder",
+        "/workspace"
+      ]
+    },
+    "readmeUpdates": {
+      "status": "✅ COMPLETE",
+      "file": "README.md",
+      "changes": [
+        "Added Product Overview section describing AI intake processor positioning",
+        "Updated local URLs with new route names (Try It, Cases, Sample case, Security)",
+        "Documented key features (quick actions, sample case, telemetry, centralized copy, auth gate)",
+        "Explained SOL color coding (red/amber/green)",
+        "Added telemetry enable instructions"
+      ]
+    }
+  },
+  "pendingTasks": {
+    "commitChanges": {
+      "status": "⏳ PENDING",
+      "description": "Stage and commit all changes with conventional commit messages referencing product repositioning"
+    },
+    "clerkIntegration": {
+      "status": "⏳ FUTURE",
+      "description": "Set isAuthenticated flag based on Clerk session in template-builder/page.tsx"
+    },
+    "analyticsIntegration": {
+      "status": "⏳ FUTURE",
+      "description": "Set telemetry.enabled = true and configure analytics provider (Google Analytics, Segment, etc.)"
+    },
+    "productionDeployment": {
+      "status": "⏳ FUTURE",
+      "description": "Deploy to Vercel (web), Render (server), Neon (database) per DEPLOYMENT.md"
+    }
+  },
+  "filesSummary": {
+    "created": [
+      "web/lib/copy.ts",
+      "web/lib/telemetry.ts",
+      "web/app/security/page.tsx",
+      "web/app/intakes/sample/page.tsx",
+      "PRODUCT_STATUS.json"
+    ],
+    "modified": [
+      "web/components/Navigation.tsx",
+      "web/app/(marketing)/page.tsx",
+      "web/app/workspace/page.tsx",
+      "web/app/intakes/page.tsx",
+      "web/app/intakes/[id]/page.tsx",
+      "web/app/pricing/page.tsx",
+      "web/app/template-builder/page.tsx",
+      "README.md"
+    ]
+  },
+  "technicalNotes": {
+    "importPaths": "Used relative paths (../../) instead of @/ aliases due to tsconfig resolution issues in some page routes",
+    "typeSafety": "Added TypeScript types for UploadItem and UploadDetail with SOL and confidence fields",
+    "constAssertion": "COPY object uses 'as const' for type safety and autocomplete",
+    "blobConversion": "Sample file and paste text use Blob → File conversion for upload API compatibility",
+    "stickyUI": "Sticky CTA uses fixed positioning with z-40, appears only when uploadResult exists",
+    "badgeLogic": "SOL badge color calculation: <30 red, 30-90 amber, >90 green (based on days remaining)"
+  },
+  "userFlow": {
+    "primaryPath": [
+      "1. Land on home page → See new hero 'Turn messy client emails...'",
+      "2. Click 'Upload a sample file' → Go to /workspace",
+      "3. Click sample file button → Upload sample intake.txt automatically",
+      "4. See AI summary, SOL analysis, questions, next steps",
+      "5. Sticky CTA appears: 'Save this case — Create free account'",
+      "6. Click CTA → Go to /pricing"
+    ],
+    "secondaryPath": [
+      "1. Land on home page → Click 'View sample case'",
+      "2. See pre-filled John Smith PI case at /intakes/sample",
+      "3. Review all sections (summary, SOL green badge, questions, next steps)",
+      "4. Click 'Upload a file →' → Go to /workspace"
+    ],
+    "pasteFlow": [
+      "1. Go to /workspace",
+      "2. Click 'Paste email text' button",
+      "3. Modal opens with textarea",
+      "4. Paste client email text, click 'Analyze'",
+      "5. Text converts to File, uploads to API",
+      "6. See AI processing results"
+    ]
+  },
+  "references": {
+    "prd": "tasks/0001-prd-intakelegal-mvp.md",
+    "copilotInstructions": ".github/copilot-instructions.md",
+    "deploymentGuide": "DEPLOYMENT.md",
+    "e2eStatus": "FINAL_STATUS.json"
+  }
+}

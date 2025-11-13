@@ -1,0 +1,118 @@
+// Prisma schema for IntakeLegal MVP
+// Run: npx prisma migrate dev --name init (with DATABASE_URL set)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model FormInstance {
+  id              String   @id @default(cuid())
+  firmId          String
+  templateId      String
+  slug            String   @unique
+  published       Boolean  @default(false)
+  themeJSON       Json?
+  retentionPolicy String?
+  schemaJSON      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  intakes         Intake[]
+}
+
+model Intake {
+  id             String   @id @default(cuid())
+  formId         String
+  slug           String
+  clientName     String
+  contactJSON    Json
+  narrative      String
+  eventDatesJSON String[]
+  consent        Boolean
+  aiSummary      String
+  aiClassification String
+  aiFollowUps    Json
+  solExpiryDate  DateTime?
+  solDaysRemaining Int?
+  solBadge       String?
+  solBasis       String?
+  solDisclaimer  String?
+  solVersion     String?      // version of SOL logic used
+  solDisclaimerVersion String? // version of disclaimer text
+  processedAt    DateTime?    // set after AI + SOL processing completes
+  exportedAt     DateTime?    // set when PDF export occurs
+  archivedAt     DateTime?    // set when intake archived (terminal state)
+  status         String   @default("new")
+  createdAt      DateTime @default(now())
+
+  form           FormInstance @relation(fields: [formId], references: [id], onDelete: Cascade)
+  @@index([slug])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  eventType  String
+  actorUserId String?
+  firmId     String?
+  entityType String?
+  entityId   String?
+  metadata   Json
+  createdAt  DateTime @default(now())
+  @@index([firmId])
+  @@index([eventType])
+  @@index([entityType, entityId])
+}
+
+model Upload {
+  id                      String    @id @default(cuid())
+  filename                String
+  mimeType                String
+  size                    Int
+  filePath                String
+  transcript              String?
+  extractedData           Json?
+  summary                 String?
+  clarificationQuestions  Json?
+  nextSteps               Json?
+  solAnalysis             Json?
+  firmId                  String?
+  status                  String    @default("uploaded")
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([firmId])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model FirmTemplate {
+  id                  String   @id @default(cuid())
+  firmId              String   @unique
+  name                String
+  enabledLawAreas     String[]
+  customFields        Json
+  summaryTemplate     String?
+  questionsTemplate   String?
+  stepsTemplate       String?
+  aiConsentAt         DateTime? // firm-level AI processing consent timestamp
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([firmId])
+}
+
+// Optional Firm model for future expansion (multi-tenancy metadata)
+model Firm {
+  id         String   @id @default(cuid())
+  name       String
+  aiConsentAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([name])
+}

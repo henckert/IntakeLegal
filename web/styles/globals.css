@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #138E9D;
+  --brand-secondary: #2DB1BB;
+}
+
+html, body {
+  height: 100%;
+  background-color: #F0F7F8;
+  color: #1A1F2C;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', Verdana, sans-serif;
+}
+
+.header-gradient {
+  background: linear-gradient(to right, #138E9D 0%, #2DB1BB 100%);
+}
+
+.card {
+  @apply rounded-2xl shadow-md bg-white;
+}
+
+.badge-red { @apply bg-red-100 text-red-800; }
+.badge-amber { @apply bg-amber-100 text-amber-800; }
+.badge-green { @apply bg-green-100 text-green-800; }
