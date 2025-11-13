@@ -41,6 +41,8 @@ import intakeRouter from './routes/intake.js';
 import dashboardRouter from './routes/dashboard.js';
 import uploadsRouter from './routes/uploads.js';
 import consentRouter from './routes/consent.js';
+import emailIntakeRouter from './routes/emailIntake.js';
+import voiceRouter from './routes/voice.js';
 import { requestIdMiddleware } from './middleware/requestId.js';
 import { getCommitHash } from './lib/version.js';
 import { getSolDefaultVersion, DISCLAIMER_VERSION } from './services/sol.js';
@@ -119,6 +121,8 @@ if (DEV) {
 app.use(intakeRouter);
 app.use('/api/uploads', uploadLimiter, uploadsRouter);
 app.use(consentRouter);
+app.use(emailIntakeRouter);
+app.use(voiceRouter);
 
 // Dynamically load Clerk only when configured to avoid startup crashes when deps/env missing.
 // Then mount protected firm routes (forms & dashboard) accordingly.

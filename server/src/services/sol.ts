@@ -34,7 +34,15 @@ type ComputeOptions = {
 
 function computeSOL_ie_v1(claimType: string, eventDateISO: string): SolResult {
   const years = yearsForClaim(claimType);
-  if (!years) return { disclaimer: 'Claim category not recognised for SOL v1 mapping.', version: 'ie-v1', disclaimerVersion: DISCLAIMER_VERSION };
+  if (!years)
+    return {
+      // For unknown categories, provide a safe default: no computed expiry and a neutral/green badge
+      // to avoid alarming users while still surfacing a disclaimer.
+      badge: 'green',
+      disclaimer: 'Claim category not recognised for SOL v1 mapping.',
+      version: 'ie-v1',
+      disclaimerVersion: DISCLAIMER_VERSION,
+    };
   const expiry = addYears(new Date(eventDateISO), years);
   const days = differenceInCalendarDays(expiry, new Date());
   const badge = days < 30 ? 'red' : days <= 90 ? 'amber' : 'green';

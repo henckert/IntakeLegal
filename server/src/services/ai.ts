@@ -27,7 +27,7 @@ export async function runAI(narrative: string): Promise<AIResult> {
   const inputText = ENABLE_AI_REDACTION_PIPELINE ? redactPII(narrative) : { redactedText: narrative, tokens: [] };
   const redactions = inputText.tokens.length;
 
-  if (!ENV.OPENAI_API_KEY) {
+  if (!process.env.OPENAI_API_KEY || process.env.FORCE_MOCK_AI === 'true') {
     const firstSentence = inputText.redactedText.split(/\.|\n/)[0]?.slice(0, 180) || 'Summary unavailable.';
     const knowledge = await readKnowledgeSafe();
     const followups = (knowledge.followups?.length ? knowledge.followups : [

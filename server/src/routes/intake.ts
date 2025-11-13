@@ -11,6 +11,7 @@ import { aiConsentGate } from '../middleware/consentGate.js';
 import { OPENAI_TIMEOUT_MS, EMAIL_TIMEOUT_MS, PDF_TIMEOUT_MS, DRY_RUN, HAS_OPENAI, HAS_EMAIL } from '../env.js';
 import { audit } from '../services/audit.js';
 import { errors } from '../lib/errors.js';
+import { sendIntakePackage } from '../services/email.js';
 
 const router = Router();
 
@@ -160,6 +161,36 @@ router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) =
     }
   } catch {}
   return res.status(501).json({ message: 'DOCX export is not implemented in MVP' });
+});
+
+// Email back the intake package (PDF attached) to recipient
+router.post('/api/intakes/:id/email-package', async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { recipientEmail } = (req.body ?? {}) as { recipientEmail?: string };
+  if (!recipientEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipientEmail)) {
+    return errors.badRequest(res, req, 'recipientEmail required and must be valid');
+  }
+  const i = await db.intakes.get(id);
+  if (!i) return errors.notFound(res, req, 'Intake not found');
+  try {
+    const result = await sendIntakePackage({
+      intake: {
+        id: (i as any).id,
+        clientName: (i as any).clientName,
+        narrative: (i as any).narrative,
+        ai: { summary: (i as any).ai?.summary ?? (i as any).aiSummary, classification: (i as any).ai?.classification ?? (i as any).aiClassification, followUps: (i as any).ai?.followUps ?? (i as any).aiFollowUps },
+        sol: { expiryDate: (i as any).sol?.expiryDate ?? (i as any).solExpiryDate, badge: (i as any).sol?.badge ?? (i as any).solBadge, basis: (i as any).sol?.basis ?? (i as any).solBasis, disclaimer: (i as any).sol?.disclaimer ?? (i as any).solDisclaimer, version: (i as any).sol?.version, disclaimerVersion: (i as any).sol?.disclaimerVersion },
+      },
+      recipientEmail,
+    });
+    if ((result as any).ok) {
+      try { await audit(req, 'intake.email_package.sent', { entityType: 'Intake', entityId: id, recipientEmail }); } catch {}
+      return res.json({ ok: true });
+    }
+    return errors.internal(res, req, 'Failed to send intake package', { detail: (result as any).error });
+  } catch (e: any) {
+    return errors.internal(res, req, 'Failed to send intake package', { detail: String(e?.message || e) });
+  }
 });
 
 export default router;
