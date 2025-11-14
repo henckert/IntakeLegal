@@ -37,7 +37,8 @@ const upload = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 102
 router.post('/api/intake/:slug/voice', limitAiPerFirmUser, upload.single('audio'), aiConsentGate, async (req: Request, res: Response) => {
   try {
     if (!req.file) return errors.badRequest(res, req, 'No audio file uploaded', { hint: 'Provide field "audio"' });
-    await audit(req, 'intake.voice.received', { slug: req.params.slug, filename: req.file.originalname, size: req.file.size });
+    // Avoid logging PII or original filenames; log minimal metadata
+    await audit(req, 'intake.voice.received', { slug: req.params.slug, size: req.file.size, ext: path.extname(req.file.originalname).toLowerCase() });
 
     const t = await transcribeAudio(req.file.path);
     const aiAllowed = (req as any).aiAllowed !== false;
@@ -60,8 +61,8 @@ router.post('/api/intake/:slug/voice', limitAiPerFirmUser, upload.single('audio'
       status: 'processed',
       createdAt: new Date().toISOString(),
     };
-    await db.intakes.set(id, intakeRecord);
-    await audit(req, 'intake.voice.processed', { entityType: 'Intake', entityId: id, aiSkipped: !aiAllowed });
+  await db.intakes.set(id, intakeRecord);
+  await audit(req, 'intake.voice.processed', { entityType: 'Intake', entityId: id, aiSkipped: !aiAllowed });
 
     return res.status(200).json({ id, summaryText: ai.summary, area: ai.classification, limitation: sol, meta: { source: 'voice', aiSkipped: !aiAllowed } });
   } catch (e: any) {

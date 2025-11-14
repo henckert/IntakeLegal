@@ -43,7 +43,9 @@ router.post('/api/email-intake', limitAiPerFirmUser, aiConsentGate, async (req: 
   if (!firmId) return errors.unauthorized(res, req, 'Firm context required for email intake', { hint: 'Provide X-Firm-Id header or configure domain mapping' });
 
   try {
-    await audit(req, 'intake.email.received', { fromEmail: payload.fromEmail, subject: payload.subject, firmId });
+    // Avoid logging PII: do not log full email or body
+    const maskedEmail = payload.fromEmail.replace(/(^.).+(@.*$)/, '$1***$2');
+    await audit(req, 'intake.email.received', { subjectLen: (payload.subject || '').length, maskedEmail, hasAttachments: (payload.attachments || []).length > 0, firmId });
 
     const aiAllowed = (req as any).aiAllowed !== false;
     let ai: any = { summary: '', classification: 'Other', followUps: [] };
@@ -68,8 +70,8 @@ router.post('/api/email-intake', limitAiPerFirmUser, aiConsentGate, async (req: 
       status: 'processed',
       createdAt: new Date().toISOString(),
     };
-    await db.intakes.set(id, intakeRecord);
-    await audit(req, 'intake.email.processed', { entityType: 'Intake', entityId: id, aiSkipped: !aiAllowed, firmId });
+  await db.intakes.set(id, intakeRecord);
+  await audit(req, 'intake.email.processed', { entityType: 'Intake', entityId: id, aiSkipped: !aiAllowed, firmId });
 
     return res.status(200).json({
       id,

@@ -164,7 +164,8 @@ router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) =
 });
 
 // Email back the intake package (PDF attached) to recipient
-router.post('/api/intakes/:id/email-package', async (req: Request, res: Response) => {
+// Apply rate-limiter to email package route as well
+router.post('/api/intakes/:id/email-package', limitAiPerFirmUser, async (req: Request, res: Response) => {
   const id = req.params.id;
   const { recipientEmail } = (req.body ?? {}) as { recipientEmail?: string };
   if (!recipientEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipientEmail)) {
@@ -184,7 +185,8 @@ router.post('/api/intakes/:id/email-package', async (req: Request, res: Response
       recipientEmail,
     });
     if ((result as any).ok) {
-      try { await audit(req, 'intake.email_package.sent', { entityType: 'Intake', entityId: id, recipientEmail }); } catch {}
+      // Avoid logging PII: do not include recipientEmail
+      try { await audit(req, 'intake.email_package.sent', { entityType: 'Intake', entityId: id }); } catch {}
       return res.json({ ok: true });
     }
     return errors.internal(res, req, 'Failed to send intake package', { detail: (result as any).error });
