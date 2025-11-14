@@ -1,0 +1,67 @@
+{
+  "branch": "feature/finalisation-v2",
+  "commit": "4944baa",
+  "build": {
+    "web": "fail",
+    "server": "fail"
+  },
+  "health": {
+    "server": "fail"
+  },
+  "routes": {
+    "/": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    },
+    "/pricing": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    },
+    "/support": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    },
+    "/security": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    },
+    "/workspace": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    },
+    "/about": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    },
+    "/intakes": {
+      "status": 0,
+      "textMatch": false,
+      "sample": "fetch failed"
+    }
+  },
+  "navLabels": {
+    "allPresent": false,
+    "missing": [
+      "Try Demo",
+      "My Intakes",
+      "Plans & Pricing",
+      "Data & Compliance",
+      "Help Centre",
+      "About Us",
+      "Sign In"
+    ]
+  },
+  "cta": {
+    "present": false
+  },
+  "regressions": [],
+  "notes": [
+    "ports: web=3000, api=3001"
+  ]
+}
