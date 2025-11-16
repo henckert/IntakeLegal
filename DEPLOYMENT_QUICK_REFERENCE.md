@@ -89,10 +89,10 @@ CLERK_SECRET_KEY=
 
 ```env
 # POOLED (use in Render/Vercel for runtime)
-DATABASE_URL=postgresql://<user>:<password>@<host>/<db>?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:5432/<DB_NAME>?sslmode=require&channel_binding=require
 
 # DIRECT (use for migrations only)
-DIRECT_URL=postgresql://neondb_owner:npg_durK8Bbt0CNY@ep-shiny-scene-abnixujn.eu-west-2.aws.neon.tech/neondb?sslmode=require
+DIRECT_URL=postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:5432/<DB_NAME>?sslmode=require
 ```
 
 **⚠️ Important:** Use **POOLED** for runtime (Render), **DIRECT** for migrations (local or Render Shell).

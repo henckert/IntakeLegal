@@ -46,18 +46,18 @@ From Neon Dashboard → Connection Details:
 # Copy BOTH connection strings:
 
 # 1. Pooled (for application runtime)
-DATABASE_URL="postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require"
 
 # 2. Direct (for migrations)
-DIRECT_URL="postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=10"
+DIRECT_URL="postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require&connect_timeout=10"
 ```
 
 ### Step 1.3: Add to Local .env
 
 ```bash
 # Edit .env and add:
-DATABASE_URL="postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require"
-DIRECT_URL="postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=10"
+DATABASE_URL="postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require"
+DIRECT_URL="postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require&connect_timeout=10"
 ```
 
 ### Step 1.4: Run Migrations
@@ -124,8 +124,8 @@ PORT=10000
 OPENAI_API_KEY=sk-REDACTED
 
 # From Neon (Step 1.2):
-DATABASE_URL=postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
-DIRECT_URL=postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=10
+DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require
+DIRECT_URL=postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require&connect_timeout=10
 
 # Will be your Vercel URL (set after Step 3):
 APP_BASE_URL=https://intakelegal.vercel.app

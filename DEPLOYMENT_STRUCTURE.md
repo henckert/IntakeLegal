@@ -280,7 +280,7 @@ Auto-detect build commands
 # Environment Cross-Links (after deployment)
 Render → APP_BASE_URL: https://intakelegal.vercel.app
 Vercel → NEXT_PUBLIC_SERVER_BASE_URL: https://intakelegal-api.onrender.com
-Both → DATABASE_URL: postgresql://neondb_owner:npg_durK8Bbt0CNY@ep-shiny-scene-abnixujn-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+Both → DATABASE_URL: postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:5432/<DB_NAME>?sslmode=require
 ```
 
 ---

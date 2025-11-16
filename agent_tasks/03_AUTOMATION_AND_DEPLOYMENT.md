@@ -344,14 +344,14 @@ exit 0
 **Commands:**
 ```bash
 # Use direct connection for migration
-export DATABASE_URL="postgresql://neondb_owner:...@ep-shiny-scene-abnixujn.eu-west-2.aws.neon.tech/neondb?sslmode=require"
+export DATABASE_URL="postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:5432/<DB_NAME>?sslmode=require"
 
 cd server
 npx prisma migrate deploy
 npx prisma generate
 
 # Switch back to pooled for runtime
-export DATABASE_URL="postgresql://neondb_owner:...@ep-shiny-scene-abnixujn-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+export DATABASE_URL="postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST_POOLER>:5432/<DB_NAME>?sslmode=require&channel_binding=require"
 ```
 
 **Acceptance Criteria:**

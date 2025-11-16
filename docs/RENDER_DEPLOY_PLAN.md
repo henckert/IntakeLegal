@@ -27,8 +27,8 @@
 |-----|-------|--------|--------|
 | **NODE_ENV** | `production` | render.yaml | ✅ Set |
 | **PORT** | `10000` | render.yaml | ✅ Set |
-| **DATABASE_URL** | `postgresql://neondb_owner:***@ep-shiny-scene-abnixujn-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require` | Neon (pooled) | ✅ Ready |
-| **DIRECT_URL** | `postgresql://neondb_owner:***@ep-shiny-scene-abnixujn.eu-west-2.aws.neon.tech/neondb?sslmode=require` | Neon (direct) | ✅ Ready |
+| **DATABASE_URL** | `postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require` | Neon (pooled) | ✅ Ready |
+| **DIRECT_URL** | `postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>/<DB_NAME>?sslmode=require` | Neon (direct) | ✅ Ready |
 | **OPENAI_API_KEY** | `sk-proj-***` | Local .env | ✅ Available |
 | **APP_BASE_URL** | `https://intake-legal-web.vercel.app` | Cross-service | ✅ Set |
 | **SERVER_BASE_URL** | `https://intakelegal-api.onrender.com` | Self-reference | ✅ Set |
