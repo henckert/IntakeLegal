@@ -110,7 +110,7 @@ export default function BuilderPage() {
     <Protected>
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-heading">Form Builder</h1>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-heading heading-serif">Form Builder</h1>
           {publishedSlug ? (
             <a href={`/intake/${publishedSlug}`} className="text-accent1 underline">
               View Public Link →

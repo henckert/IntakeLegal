@@ -30,9 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <>
             <header className="header-gradient text-white">
               <div className="mx-auto max-w-7xl px-6 py-4">
-                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>
-                  IntakeLegal
-                </a>
+                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
               </div>
               <Navigation />
             </header>
@@ -42,9 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ClerkProvider publishableKey={publishableKey}>
             <header className="header-gradient text-white">
               <div className="mx-auto max-w-7xl px-6 py-4">
-                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>
-                  IntakeLegal
-                </a>
+                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
               </div>
               <Navigation />
             </header>

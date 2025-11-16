@@ -18,7 +18,6 @@ export const DISCLAIMER_VERSION = '2025-01';
 export function getSolDefaultVersion(): string {
   return `${DEFAULT_JURISDICTION}-${DEFAULT_VERSION}`;
 }
-
 function yearsForClaim(claim: string): number | undefined {
   const c = claim.toLowerCase();
   if (c.includes('defamation')) return 1;
@@ -26,7 +25,6 @@ function yearsForClaim(claim: string): number | undefined {
   if (c.includes('contract') || c.includes('negligence')) return 6;
   return undefined;
 }
-
 type ComputeOptions = {
   jurisdiction?: string; // e.g., 'ie'
   version?: string; // e.g., 'v1'
@@ -36,8 +34,6 @@ function computeSOL_ie_v1(claimType: string, eventDateISO: string): SolResult {
   const years = yearsForClaim(claimType);
   if (!years)
     return {
-      // For unknown categories, provide a safe default: no computed expiry and a neutral/green badge
-      // to avoid alarming users while still surfacing a disclaimer.
       badge: 'green',
       disclaimer: 'Claim category not recognised for SOL v1 mapping.',
       version: 'ie-v1',
@@ -62,21 +58,21 @@ export function computeSOL(
   eventDateISO: string | undefined,
   opts: ComputeOptions = {}
 ): SolResult {
-  if (!claimType || !eventDateISO) return { disclaimer: 'Insufficient information for limitation assessment.', version: `${DEFAULT_JURISDICTION}-${DEFAULT_VERSION}`, disclaimerVersion: DISCLAIMER_VERSION };
+  if (!claimType || !eventDateISO)
+    return {
+      disclaimer: 'Insufficient information for limitation assessment.',
+      version: `${DEFAULT_JURISDICTION}-${DEFAULT_VERSION}`,
+      disclaimerVersion: DISCLAIMER_VERSION,
+    };
 
   const jurisdiction = (opts.jurisdiction || DEFAULT_JURISDICTION).toLowerCase();
   const version = (opts.version || DEFAULT_VERSION).toLowerCase();
 
   if (!ENABLE_SOL_UPDATES) {
-    // Legacy path: always IE v1 semantics
     return computeSOL_ie_v1(claimType, eventDateISO);
   }
-
-  // Strategy map for future versions/jurisdictions
   if (jurisdiction === 'ie' && version === 'v1') {
     return computeSOL_ie_v1(claimType, eventDateISO);
   }
-
-  // Fallback
   return computeSOL_ie_v1(claimType, eventDateISO);
 }

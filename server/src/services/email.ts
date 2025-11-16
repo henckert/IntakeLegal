@@ -23,7 +23,6 @@ export async function sendEmail(payload: EmailPayload): Promise<{ ok: true } | {
   console.log('[email:todo]', payload);
   return { ok: true };
 }
-
 export async function sendIntakePackage(options: {
   intake: {
     id: string;

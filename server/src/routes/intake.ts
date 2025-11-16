@@ -4,14 +4,13 @@ import { db } from '../store/index.js';
 import { runAI } from '../services/ai.js';
 import { computeSOL } from '../services/sol.js';
 import { sendIntakePDF } from '../services/pdf.js';
-import { sendEmail } from '../services/email.js';
+import { sendEmail, sendIntakePackage } from '../services/email.js';
 import { withTimeout } from '../lib/withTimeout.js';
 import { limitAiPerFirmUser } from '../middleware/rateLimit.js';
 import { aiConsentGate } from '../middleware/consentGate.js';
 import { OPENAI_TIMEOUT_MS, EMAIL_TIMEOUT_MS, PDF_TIMEOUT_MS, DRY_RUN, HAS_OPENAI, HAS_EMAIL } from '../env.js';
 import { audit } from '../services/audit.js';
 import { errors } from '../lib/errors.js';
-import { sendIntakePackage } from '../services/email.js';
 
 const router = Router();
 
@@ -30,8 +29,8 @@ router.post('/api/intake/:slug/submit', limitAiPerFirmUser, aiConsentGate, async
 
   // Body should be object if express.json ran; recover once if string:
   if (typeof req.body === 'string') {
-    try { req.body = JSON.parse(req.body); phase('parsed string body'); }
-    catch (e) { return errors.badRequest(res, req, 'Bad JSON', { detail: String(e) }); }
+  try { req.body = JSON.parse(req.body); phase('parsed string body'); }
+  catch (e) { return errors.badRequest(res, req, 'Bad JSON', { detail: String(e) }); }
   }
   const body = req.body as any;
 
@@ -53,7 +52,6 @@ router.post('/api/intake/:slug/submit', limitAiPerFirmUser, aiConsentGate, async
     const aiAllowed = (req as any).aiAllowed !== false;
     let ai: any = { summary: '', classification: 'Other', followUps: [], provenance: { source: 'mock', model: 'mock-embedded', promptVersion: '2025-01', redactionsApplied: 0 } };
     if (aiAllowed) {
-      // runAI returns { summary, classification, followUps }
       ai = await withTimeout(runAI(body.case?.narrative || ''), OPENAI_TIMEOUT_MS, 'openai.summary');
       phase('ai:done');
     } else {
@@ -65,7 +63,7 @@ router.post('/api/intake/:slug/submit', limitAiPerFirmUser, aiConsentGate, async
     phase('sol:done');
 
     let emailId: string | undefined;
-  if (HAS_EMAIL && body.client?.email) {
+    if (HAS_EMAIL && body.client?.email) {
       phase('email:start');
       try {
         const to = body.client.email as string;
@@ -83,7 +81,7 @@ router.post('/api/intake/:slug/submit', limitAiPerFirmUser, aiConsentGate, async
 
     // PDF export not implemented as URL in MVP; skip or generate on-demand in export endpoint
     phase('pdf:skipped');
-    // Persist intake lifecycle and emit audits
+    // Persist intake lifecycle and emit audits (feature branch logic)
     try {
       const form = await db.findFormBySlug(req.params.slug);
       const id = `intake_${Math.random().toString(36).slice(2,10)}`;
@@ -164,7 +162,6 @@ router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) =
 });
 
 // Email back the intake package (PDF attached) to recipient
-// Apply rate-limiter to email package route as well
 router.post('/api/intakes/:id/email-package', limitAiPerFirmUser, async (req: Request, res: Response) => {
   const id = req.params.id;
   const { recipientEmail } = (req.body ?? {}) as { recipientEmail?: string };
@@ -185,7 +182,6 @@ router.post('/api/intakes/:id/email-package', limitAiPerFirmUser, async (req: Re
       recipientEmail,
     });
     if ((result as any).ok) {
-      // Avoid logging PII: do not include recipientEmail
       try { await audit(req, 'intake.email_package.sent', { entityType: 'Intake', entityId: id }); } catch {}
       return res.json({ ok: true });
     }
@@ -194,7 +190,6 @@ router.post('/api/intakes/:id/email-package', limitAiPerFirmUser, async (req: Re
     return errors.internal(res, req, 'Failed to send intake package', { detail: String(e?.message || e) });
   }
 });
-
 export default router;
 
 // Update AI summary (editable in dashboard)

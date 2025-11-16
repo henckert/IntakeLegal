@@ -22,12 +22,12 @@ export function getPromptVersion() {
   return PROMPT_VERSION;
 }
 
-// Deterministic mock when no OPENAI key
+// Deterministic mock when no OPENAI key (or FORCE_MOCK_AI)
 export async function runAI(narrative: string): Promise<AIResult> {
   const inputText = ENABLE_AI_REDACTION_PIPELINE ? redactPII(narrative) : { redactedText: narrative, tokens: [] };
   const redactions = inputText.tokens.length;
 
-  if (!process.env.OPENAI_API_KEY || process.env.FORCE_MOCK_AI === 'true') {
+  if (!ENV.OPENAI_API_KEY || process.env.FORCE_MOCK_AI === 'true') {
     const firstSentence = inputText.redactedText.split(/\.|\n/)[0]?.slice(0, 180) || 'Summary unavailable.';
     const knowledge = await readKnowledgeSafe();
     const followups = (knowledge.followups?.length ? knowledge.followups : [
@@ -42,7 +42,7 @@ export async function runAI(narrative: string): Promise<AIResult> {
       provenance: { source: 'mock', model: 'mock-embedded', promptVersion: PROMPT_VERSION, redactionsApplied: redactions },
     };
   }
-  // TODO: Implement OpenAI client call; for MVP we keep mock deterministic
+  // TODO: Implement OpenAI client call; for MVP we simulate deterministic output retaining provenance
   return {
     summary: inputText.redactedText.slice(0, 160) + '...',
     classification: classifyHeuristic(inputText.redactedText),

@@ -17,11 +17,11 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'react/react-in-jsx-scope': 'off'
   },
+  // Keep feature branch Prisma safety rules while allowing prisma usage inside helpers.
   overrides: [
     {
       files: ['server/src/**/*.ts'],
       rules: {
-        // Disallow direct Prisma client imports/usage in server code; require tenantDb wrapper
         'no-restricted-imports': [
           'error',
           {
@@ -36,10 +36,7 @@ module.exports = {
     },
     {
       files: ['server/src/prisma/**', 'server/src/services/tenantDb.ts'],
-      rules: {
-        // Allow prisma usage within the prisma helper and tenantDb wrapper
-        'no-restricted-imports': 'off'
-      }
+      rules: { 'no-restricted-imports': 'off' }
     }
   ]
 };

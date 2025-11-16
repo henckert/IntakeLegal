@@ -4,7 +4,6 @@ const startupTimer = Date.now();
 
 let httpServer: any = null;
 
-// Graceful shutdown handler
 function gracefulShutdown(signal: string) {
   console.log(`[server] Received ${signal}, starting graceful shutdown...`);
   if (httpServer) {
@@ -12,7 +11,6 @@ function gracefulShutdown(signal: string) {
       console.log('[server] HTTP server closed');
       process.exit(0);
     });
-    // Force exit after 5 seconds if graceful shutdown fails
     setTimeout(() => {
       console.error('[server] Forced shutdown after timeout');
       process.exit(1);
@@ -21,7 +19,6 @@ function gracefulShutdown(signal: string) {
     process.exit(0);
   }
 }
-
 process.on('unhandledRejection', (r) => console.error('UNHANDLED_REJECTION', r));
 process.on('uncaughtException', (e) => console.error('UNCAUGHT_EXCEPTION', e));
 process.on('beforeExit', (code) => console.error('[server] BEFORE_EXIT', code));
@@ -49,55 +46,12 @@ import { getSolDefaultVersion, DISCLAIMER_VERSION } from './services/sol.js';
 import { getPromptVersion } from './services/ai.js';
 
 const app = express();
-
-// CORS: Allow both production APP_BASE_URL and localhost:3000 for dev
-const allowedOrigins = [
-  ENV.APP_BASE_URL,
-  'http://localhost:3000',
-  'http://127.0.0.1:3000'
-].filter(Boolean);
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, Postman)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS policy: origin ${origin} not allowed`));
-      }
-    },
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  }),
-);
-
-// Rate limiting for uploads (10 requests per 15 minutes per IP)
-const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per windowMs
-  message: { error: 'Too many upload requests, please try again later.' },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
-// JSON middleware FIRST and permissive (must be before routes)
-app.use(express.json({ type: ['application/json', 'application/*+json'], limit: '1mb' }));
-// Attach X-Request-Id for correlation
+const allowedOrigins = [ENV.APP_BASE_URL,'http://localhost:3000','http://127.0.0.1:3000'].filter(Boolean);
+app.use(cors({ origin: (origin, cb) => { if (!origin) return cb(null,true); if (allowedOrigins.includes(origin)) return cb(null,true); cb(new Error(`CORS policy: origin ${origin} not allowed`)); }, credentials: true, allowedHeaders: ['Content-Type','Authorization'], methods: ['GET','POST','PUT','DELETE','OPTIONS'] }));
+const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many upload requests, please try again later.' }, standardHeaders: true, legacyHeaders: false });
+app.use(express.json({ type: ['application/json','application/*+json'], limit: '1mb' }));
 app.use(requestIdMiddleware);
-
-
-app.get('/health', (_req, res) => {
-  res.status(200).json({
-    ok: true,
-    ts: new Date().toISOString(),
-    commit: getCommitHash(),
-    sol: { defaultVersion: getSolDefaultVersion(), disclaimerVersion: DISCLAIMER_VERSION },
-    ai: { promptVersion: getPromptVersion() },
-  });
-});
+app.get('/health', (_req, res) => { res.status(200).json({ ok: true, ts: new Date().toISOString(), commit: getCommitHash(), sol: { defaultVersion: getSolDefaultVersion(), disclaimerVersion: DISCLAIMER_VERSION }, ai: { promptVersion: getPromptVersion() } }); });
 
 // Debug endpoint to show active handles (timers, sockets, etc.)
 if (DEV) {
@@ -117,7 +71,6 @@ if (DEV) {
   });
 }
 
-// Mount public routes first (health + public intake + uploads with rate limiting)
 app.use(intakeRouter);
 app.use('/api/uploads', uploadLimiter, uploadsRouter);
 app.use(consentRouter);
@@ -247,13 +200,4 @@ async function attemptListen(startPort: number, maxAttempts = 10): Promise<{ ser
 const initialPort = resolvePort();
 
 // IIFE to avoid top-level await and prevent startup stalls
-(async () => {
-  const { server, port } = await attemptListen(initialPort);
-  httpServer = server; // Store for graceful shutdown
-  const elapsed = Date.now() - startupTimer;
-  console.log(`[server] startup complete in ${elapsed}ms on :${port}`);
-  
-  if (elapsed > STARTUP_TIMEOUT) {
-    console.warn(`[server] SLOW_START detected (${elapsed}ms > ${STARTUP_TIMEOUT}ms threshold)`);
-  }
-})();
+(async () => { const { server, port } = await attemptListen(initialPort); httpServer = server; const elapsed = Date.now() - startupTimer; console.log(`[server] startup complete in ${elapsed}ms on :${port}`); if (elapsed > STARTUP_TIMEOUT) { console.warn(`[server] SLOW_START detected (${elapsed}ms > ${STARTUP_TIMEOUT}ms threshold)`); } })();
