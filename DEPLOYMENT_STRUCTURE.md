@@ -96,7 +96,7 @@ Health Check Path: /health
 Environment Variables (add via Render Dashboard):
   - NODE_ENV=production
   - PORT=10000
-  - OPENAI_API_KEY=<your-openai-api-key>
+  - OPENAI_API_KEY=sk-REDACTED
   - DATABASE_URL=postgresql://<user>:<password>@<host>/<db>?sslmode=require
   - DIRECT_URL=(same as DATABASE_URL but with direct endpoint)
   - APP_BASE_URL=https://intakelegal.vercel.app (set after Vercel deploys)
@@ -126,7 +126,7 @@ Output Directory: (auto-detected) .next
 Environment Variables (add via Vercel Dashboard):
   - NEXT_PUBLIC_SERVER_BASE_URL=https://intakelegal-api.onrender.com (set after Render deploys)
   - NEXT_PUBLIC_APP_ENV=production
-  - OPENAI_API_KEY=<your-openai-api-key> (optional)
+  - OPENAI_API_KEY=sk-REDACTED (optional)
 ```
 
 **✅ VERDICT:** Vercel configuration is correct and deployment-ready.

@@ -121,7 +121,7 @@ NODE_ENV=production
 PORT=10000
 
 # From your .env file (placeholder — do NOT commit real keys):
-OPENAI_API_KEY=<your-openai-api-key>
+OPENAI_API_KEY=sk-REDACTED
 
 # From Neon (Step 1.2):
 DATABASE_URL=postgresql://neondb_owner:xxxxx@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
@@ -205,7 +205,7 @@ CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 
 # Optional (if you want OpenAI in browser — placeholder):
-OPENAI_API_KEY=<your-openai-api-key>
+OPENAI_API_KEY=sk-REDACTED
 ```
 
 ### Step 3.4: Deploy
