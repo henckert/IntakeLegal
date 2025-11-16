@@ -2,7 +2,6 @@ import '../styles/globals.css';
 import { Inter, DM_Serif_Display } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import Navigation from '../components/Navigation';
-import { BRAND } from '../lib/brand';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: '--font-dm-serif' });
@@ -10,14 +9,6 @@ const dmSerif = DM_Serif_Display({ subsets: ['latin'], weight: '400', variable: 
 export const metadata = {
   title: 'IntakeLegal — AI-Powered Client Intake for Law Firms',
   description: 'Automate client intake, summaries, and limitation analysis with GDPR-compliant AI.',
-  icons: {
-    icon: [
-      { url: BRAND.favicon.svg, type: 'image/svg+xml' },
-      { url: BRAND.favicon.ico, sizes: '32x32', type: 'image/x-icon' },
-    ],
-    shortcut: BRAND.favicon.ico,
-    apple: BRAND.favicon.ico,
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <>
             <header className="header-gradient text-white">
               <div className="mx-auto max-w-7xl px-6 py-4">
-                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
+                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>
+                  IntakeLegal
+                </a>
               </div>
               <Navigation />
             </header>
@@ -40,7 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ClerkProvider publishableKey={publishableKey}>
             <header className="header-gradient text-white">
               <div className="mx-auto max-w-7xl px-6 py-4">
-                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>IntakeLegal</a>
+                <a href="/" className="font-bold text-2xl" style={{ fontFamily: 'var(--font-dm-serif), serif' }}>
+                  IntakeLegal
+                </a>
               </div>
               <Navigation />
             </header>

@@ -9,50 +9,44 @@ const config: Config = {
     extend: {
       fontFamily: {
         heading: ['Inter', 'Verdana', 'sans-serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['DM Serif Display', 'Georgia', 'serif']
+        body: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
-        brand: {
-          primary: '#138E9D',
-          primaryBright: '#2DB1BB',
-          primaryDark: '#246871',
-          accentYellow: '#F9C051',
-          accentYellow2: '#F7B43C',
-          backgroundSoft: '#F0F7F8',
-          borderSoft: '#A0BDB9',
-          textMain: '#1A1F2C',
-          textMuted: '#6B7C82'
+        // New v1.0 color palette
+        primary: {
+          DEFAULT: '#0C3C78',
+          light: '#135A9E',
         },
-        primary: '#138E9D',
+        accent: '#00BFA6',
+        background: '#F7FAFC',
+        surface: '#FFFFFF',
+        'text-main': '#1A1F2C',
+        'text-muted': '#6B7280',
+        border: '#E5E7EB',
+        success: '#16A34A',
+        warning: '#FACC15',
+        error: '#DC2626',
+        // Legacy colors (for backward compatibility)
         secondary: '#13315C',
         accent1: '#00A9A5',
         accent2: '#F7C948',
-        background: '#F0F7F8',
-        surface: '#FFFFFF',
-        'text-main': '#1A1F2C',
-        'text-muted': '#6B7C82',
         'text-primary': '#101820',
         'text-secondary': '#5E6C84',
-        success: '#16A34A',
-        warning: '#F59E0B',
-        error: '#DC2626'
       },
       borderRadius: {
         '2xl': '1rem',
-        'xl': '0.75rem'
+        'xl': '0.75rem',
       },
       boxShadow: {
         card: '0 4px 14px rgba(0,0,0,0.08)',
         md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       },
       backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #138E9D 0%, #2DB1BB 50%, #246871 100%)',
-        'brand-gradient-legacy': 'linear-gradient(135deg, #0B2545 0%, #13315C 100%)',
-        'accent-gradient': 'linear-gradient(90deg, #F9C051 0%, #F7B43C 100%)',
-        'hero-gradient': 'linear-gradient(135deg, #138E9D 0%, #2DB1BB 50%, #246871 100%)'
-      }
+        'brand-gradient': 'linear-gradient(135deg, #0B2545 0%, #13315C 100%)',
+        'accent-gradient': 'linear-gradient(90deg, #0C3C78 0%, #135A9E 100%)',
+      },
     },
   },
   plugins: [],
