@@ -2,6 +2,22 @@
 
 IntakeLegal is an AI-powered client-intake and triage platform for small law firms.
 
+## Product Overview
+
+IntakeLegal is an **AI-powered intake processor** for law firms. Upload client emails, recordings, or documents and receive:
+- **Structured extraction** – Client details, incident facts, law area
+- **AI summary** – Case overview in plain language
+- **SOL analysis** – Statute of limitations with color-coded urgency (red < 30 days, amber 30-90 days, green > 90 days)
+- **Follow-up questions** – Missing details the AI identified
+- **Next steps** – Suggested actions for your team
+
+### Key Features
+- **Quick actions** – Try a sample file or paste email text directly
+- **Sample case** – View a pre-filled case to explore the interface
+- **Telemetry** – Event tracking hooks ready for analytics (currently no-op, enable by setting `telemetry.enabled = true` in `web/lib/telemetry.ts`)
+- **Centralized copy** – All marketing strings in `web/lib/copy.ts` for easy updates
+- **Auth gate** – Template builder protected behind sign-in (Clerk integration disabled for now)
+
 ## Stack
 - Web: Next.js 14 (App Router) + Tailwind + shadcn-style components
 - Server: Node.js + Express (REST API)
@@ -75,6 +91,31 @@ Retention & compliance:
 - Builder sets a `retentionPolicy` (30/90/365 days)
 - Dashboard hides intakes older than retention; export endpoints return 410 when expired
 - GDPR consent is required on submit and persisted with the intake
+
+## Scripts
+- `npm run dev` – start web and server concurrently
+- `npm run build` – build all workspaces
+- `npm run prisma:generate` / `npm run prisma:migrate` – Prisma helpers (delegates to `server/`)
+- `npm run seed` – seed demo data (delegates to `server/`)
+- `npm run diag:cloud` – verify cloud connectivity (API, Web, DB)
+
+## Deployment
+
+**Status:** 🟡 Ready for deployment
+
+See **`DEPLOYMENT.md`** for complete step-by-step instructions to deploy to:
+- **Neon** (PostgreSQL database)
+- **Render** (Express API server)
+- **Vercel** (Next.js web frontend)
+
+Quick links:
+- Neon: https://neon.tech
+- Render: https://render.com
+- Vercel: https://vercel.com
+
+Configuration files included:
+- `render.yaml` - Render deployment config
+- `vercel.json` - Vercel deployment config
 
 ## Scripts
 - `npm run dev` – start web and server concurrently

@@ -16,5 +16,27 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'react/react-in-jsx-scope': 'off'
-  }
+  },
+  // Keep feature branch Prisma safety rules while allowing prisma usage inside helpers.
+  overrides: [
+    {
+      files: ['server/src/**/*.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              { name: '@prisma/client', message: 'Use tenantDb(firmId) from server/src/services/tenantDb.ts instead of importing PrismaClient.' },
+              { name: '../prisma/client', message: 'Use tenantDb(firmId); do not import getPrisma() directly outside prisma helpers.' },
+              { name: '../prisma/client.js', message: 'Use tenantDb(firmId); do not import getPrisma() directly outside prisma helpers.' }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      files: ['server/src/prisma/**', 'server/src/services/tenantDb.ts'],
+      rules: { 'no-restricted-imports': 'off' }
+    }
+  ]
 };

@@ -88,7 +88,7 @@ export default function IntakePage({ params }: { params: { slug: string } }) {
   return (
     <div className="mx-auto max-w-2xl p-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-text-primary">Client Intake</h1>
+  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-heading heading-serif">Client Intake</h1>
         <p className="text-sm text-text-secondary">Securely share the details of your matter.</p>
       </header>
 

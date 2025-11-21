@@ -1,0 +1,19 @@
+<!-- IntakeLegal Logo Mark Only (Crescent + Ribbon) -->
+<!-- 
+  PLACEHOLDER: Replace with exact traced SVG from reference image
+  
+  Construction specs:
+  - Outer circle: R=300px, 210° crescent
+  - Inner circle: r=240px offset
+  - Inner ribbon: 34px stroke width, ~18° rotation
+  - Colors: #F9C051 (primary), #F7B43C (secondary)
+  - Viewbox: 0 0 600 600
+-->
+<svg width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+  <title>IntakeLegal Mark</title>
+  <!-- TODO: Replace with exact traced paths -->
+  <circle cx="300" cy="300" r="280" fill="#F9C051" opacity="0.3"/>
+  <text x="300" y="320" text-anchor="middle" font-size="48" fill="#333">
+    [REBUILD REQUIRED]
+  </text>
+</svg>

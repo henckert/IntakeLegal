@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// In local dev, bypass auth entirely to keep the app mock-friendly.
-const isLocal = process.env.NEXT_PUBLIC_APP_ENV === 'local';
+// Bypass auth if Clerk keys are not configured.
+// This allows the app to run in demo mode without authentication.
+const hasClerkKeys =
+  !!process.env.CLERK_SECRET_KEY &&
+  (!!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || !!process.env.CLERK_PUBLISHABLE_KEY);
 
 const passThrough = () => NextResponse.next();
 
 const isProtectedRoute = createRouteMatcher(['/builder(.*)', '/dashboard(.*)']);
 
-export default isLocal
+export default !hasClerkKeys
   ? passThrough
   : clerkMiddleware(async (auth, req) => {
       if (isProtectedRoute(req)) {

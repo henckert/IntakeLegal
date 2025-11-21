@@ -1,0 +1,17 @@
+{
+  "slug": "demo",
+  "client": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com"
+  },
+  "case": {
+    "claimType": "Personal Injury",
+    "eventDate": "2024-01-01",
+    "location": "Dublin",
+    "narrative": "I was in an accident and suffered injuries."
+  },
+  "consent": {
+    "gdpr": true
+  }
+}

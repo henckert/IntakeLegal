@@ -8,7 +8,32 @@ import Select from '../../components/ui/Select';
 import Card from '../../components/Card';
 import Tooltip from '../../components/Tooltip';
 import { apiPost } from '../../lib/api';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth as useClerkAuth } from '@clerk/nextjs';
+
+// Safe auth hook that works without ClerkProvider
+function useSafeAuth() {
+  const isLocal = process.env.NEXT_PUBLIC_APP_ENV === 'local';
+  const hasClerkKey = typeof window !== 'undefined' && (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY);
+  
+  try {
+    // Only use Clerk auth if we're not in local mode and have keys
+    if (!isLocal && hasClerkKey) {
+      return useClerkAuth();
+    }
+  } catch (e) {
+    // Clerk not available, fall through to mock
+  }
+  
+  // Return mock auth for demo/local mode
+  return {
+    getToken: async () => undefined,
+    isLoaded: true,
+    isSignedIn: false,
+    userId: null,
+    sessionId: null,
+    orgId: null,
+  };
+}
 
 const ALL_SECTIONS = [
   { key: 'clientInfo', label: 'Client Info' },
@@ -41,7 +66,7 @@ function Protected({ children }: { children: React.ReactNode }) {
 }
 
 export default function BuilderPage() {
-  const { getToken } = useAuth();
+  const { getToken } = useSafeAuth();
   const [vertical, setVertical] = useState<Vertical>('PI');
   const [sections, setSections] = useState<SectionKey[]>([
     'clientInfo',
@@ -110,7 +135,7 @@ export default function BuilderPage() {
     <Protected>
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="heading-serif text-2xl">Form Builder</h1>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-heading heading-serif">Form Builder</h1>
           {publishedSlug ? (
             <a href={`/intake/${publishedSlug}`} className="text-accent1 underline">
               View Public Link →

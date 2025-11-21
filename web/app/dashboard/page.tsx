@@ -99,7 +99,7 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-5xl p-6">
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="heading-serif text-2xl">Dashboard</h1>
+  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-heading heading-serif">Dashboard</h1>
         <p className="text-sm text-text-secondary">Latest client intakes</p>
       </header>
 

@@ -4,6 +4,13 @@ import { db } from '../store/index.js';
 import { runAI } from '../services/ai.js';
 import { computeSOL } from '../services/sol.js';
 import { sendIntakePDF } from '../services/pdf.js';
+import { sendEmail, sendIntakePackage } from '../services/email.js';
+import { withTimeout } from '../lib/withTimeout.js';
+import { limitAiPerFirmUser } from '../middleware/rateLimit.js';
+import { aiConsentGate } from '../middleware/consentGate.js';
+import { OPENAI_TIMEOUT_MS, EMAIL_TIMEOUT_MS, PDF_TIMEOUT_MS, DRY_RUN, HAS_OPENAI, HAS_EMAIL } from '../env.js';
+import { audit } from '../services/audit.js';
+import { errors } from '../lib/errors.js';
 
 const router = Router();
 
@@ -15,49 +22,93 @@ const UIShape = z.object({
   consent: z.object({ gdpr: z.boolean(), consentText: z.string().optional() }),
 });
 
-router.post('/api/intake/:slug/submit', async (req: Request, res: Response) => {
-  const slug = req.params.slug;
-  const form = (await db.findFormBySlug(slug)) ?? { id: `form_${slug}`, slug, firmId: 'demo', templateId: 'demo', published: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as any;
+router.post('/api/intake/:slug/submit', limitAiPerFirmUser, aiConsentGate, async (req: Request, res: Response) => {
+  const phase = (name: string) => console.log(`[submit] ${name}`);
+  const t0 = Date.now();
+  phase('start');
 
-  let clientName = '';
-  let contactJSON: Record<string, any> = {};
-  let narrative = '';
-  let eventDate: string | undefined;
-  let claimType: string | undefined;
-  let consent = false;
+  // Body should be object if express.json ran; recover once if string:
+  if (typeof req.body === 'string') {
+  try { req.body = JSON.parse(req.body); phase('parsed string body'); }
+  catch (e) { return errors.badRequest(res, req, 'Bad JSON', { detail: String(e) }); }
+  }
+  const body = req.body as any;
 
-  const uiTry = UIShape.safeParse(req.body);
-  if (!uiTry.success) return res.status(400).json({ error: 'Invalid intake payload' });
-  const d = uiTry.data;
-  clientName = `${d.client.firstName} ${d.client.lastName}`.trim();
-  contactJSON = { email: d.client.email, phone: d.client.phone, location: d.case.location };
-  narrative = d.case.narrative;
-  eventDate = d.case.eventDate;
-  claimType = d.case.claimType;
-  consent = d.consent.gdpr;
+  // DEV fast path: if no keys or DRY_RUN, return a mock immediately.
+  if (DRY_RUN || !HAS_OPENAI) {
+    phase('dry-run mock');
+    await audit(req, 'intake.submit', { slug: req.params.slug, dryRun: true });
+    return res.status(200).json({
+      summaryText: 'MOCK: summary unavailable in DRY_RUN / missing OPENAI_API_KEY',
+      area: 'Personal Injury',
+      limitation: { expires: '2026-01-01', daysRemaining: 365 },
+      received: body,
+      meta: { dryRun: true, durMs: Date.now() - t0 }
+    });
+  }
 
-  if (!consent) return res.status(400).json({ error: 'GDPR consent required' });
+  try {
+    phase('ai:start');
+    const aiAllowed = (req as any).aiAllowed !== false;
+    let ai: any = { summary: '', classification: 'Other', followUps: [], provenance: { source: 'mock', model: 'mock-embedded', promptVersion: '2025-01', redactionsApplied: 0 } };
+    if (aiAllowed) {
+      ai = await withTimeout(runAI(body.case?.narrative || ''), OPENAI_TIMEOUT_MS, 'openai.summary');
+      phase('ai:done');
+    } else {
+      phase('ai:skipped');
+    }
 
-  const ai = await runAI(narrative);
-  const sol = computeSOL(claimType ?? ai.classification, eventDate);
+    phase('sol:start');
+    const sol = computeSOL(ai.classification, body.case?.eventDate);
+    phase('sol:done');
 
-  const id = `intake_${Math.random().toString(36).slice(2, 10)}`;
-  await db.intakes.set(id, {
-    id,
-    formId: (form as any).id,
-    slug,
-    clientName,
-    contactJSON,
-    narrative,
-    eventDatesJSON: eventDate ? [eventDate] : undefined,
-    consent: true,
-    ai,
-    sol,
-    status: 'new',
-    createdAt: new Date().toISOString(),
-  });
+    let emailId: string | undefined;
+    if (HAS_EMAIL && body.client?.email) {
+      phase('email:start');
+      try {
+        const to = body.client.email as string;
+        const subject = `New intake: ${body.slug ?? 'submission'}`;
+        const text = `${ai.summary}\n\nNarrative:\n${body.case?.narrative ?? ''}`;
+        await withTimeout(sendEmail({ to, subject, text }), EMAIL_TIMEOUT_MS, 'email.send');
+        emailId = `mock-email-${Date.now()}`;
+      } catch (e) {
+        console.warn('[submit] email failed', e);
+      }
+      phase('email:done');
+    } else {
+      phase('email:skipped');
+    }
 
-  return res.json({ intakeId: id });
+    // PDF export not implemented as URL in MVP; skip or generate on-demand in export endpoint
+    phase('pdf:skipped');
+    // Persist intake lifecycle and emit audits (feature branch logic)
+    try {
+      const form = await db.findFormBySlug(req.params.slug);
+      const id = `intake_${Math.random().toString(36).slice(2,10)}`;
+      const intakeRecord: any = {
+        id,
+        formId: form?.id ?? 'form_demo',
+        slug: req.params.slug,
+        clientName: `${body.client?.firstName ?? ''} ${body.client?.lastName ?? ''}`.trim() || 'Client',
+        contactJSON: { email: body.client?.email, phone: body.client?.phone },
+        narrative: body.case?.narrative ?? '',
+        eventDatesJSON: body.case?.eventDate ? [body.case.eventDate] : [],
+        consent: !!body?.consent?.gdpr,
+        ai: aiAllowed ? { summary: ai.summary, classification: ai.classification, followUps: ai.followUps } : undefined,
+        sol: sol,
+        status: 'processed',
+        createdAt: new Date().toISOString(),
+      };
+      await db.intakes.set(id, intakeRecord);
+      await audit(req, 'intake.processed', { entityType: 'Intake', entityId: id, slug: req.params.slug, aiSkipped: !aiAllowed });
+    } catch (e) { console.warn('[submit] persist failed (non-fatal)', e); }
+
+    return res.status(200).json({ summaryText: ai.summary, area: ai.classification, limitation: sol, emailId, pdfUrl: undefined, meta: { durMs: Date.now() - t0, aiSkipped: !aiAllowed } });
+  } catch (e: any) {
+    console.error('[submit] failed', e);
+    const isTimeout = String(e?.message || e).includes('[timeout]');
+    return res.status(isTimeout ? 504 : 502).json({ error: isTimeout ? 'Gateway Timeout' : 'Upstream Error', detail: String(e) });
+  }
 });
 
 router.get('/api/intakes/:id/export.pdf', async (req: Request, res: Response) => {
@@ -77,14 +128,21 @@ router.get('/api/intakes/:id/export.pdf', async (req: Request, res: Response) =>
   const classification = (i as any).ai?.classification ?? (i as any).aiClassification;
   const expiryDate = (i as any).sol?.expiryDate ?? (i as any).solExpiryDate;
   const badge = (i as any).sol?.badge ?? (i as any).solBadge;
+  const solBasis = (i as any).sol?.basis ?? (i as any).solBasis;
+  const solDisclaimer = (i as any).sol?.disclaimer ?? (i as any).solDisclaimer;
+  const followUps = (i as any).ai?.followUps ?? (i as any).aiFollowUps ?? [];
   sendIntakePDF(res, {
     id: (i as any).id,
     clientName: (i as any).clientName,
     classification,
     expiryDate: expiryDate ? String(expiryDate) : undefined,
     badge,
+    solBasis,
+    solDisclaimer,
+    followUps,
     narrative: (i as any).narrative,
   });
+  try { await audit(req, 'intake.export.pdf', { entityType: 'Intake', entityId: (i as any).id }); } catch {}
 });
 
 router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) => {
@@ -103,6 +161,35 @@ router.get('/api/intakes/:id/export.docx', async (req: Request, res: Response) =
   return res.status(501).json({ message: 'DOCX export is not implemented in MVP' });
 });
 
+// Email back the intake package (PDF attached) to recipient
+router.post('/api/intakes/:id/email-package', limitAiPerFirmUser, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { recipientEmail } = (req.body ?? {}) as { recipientEmail?: string };
+  if (!recipientEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(recipientEmail)) {
+    return errors.badRequest(res, req, 'recipientEmail required and must be valid');
+  }
+  const i = await db.intakes.get(id);
+  if (!i) return errors.notFound(res, req, 'Intake not found');
+  try {
+    const result = await sendIntakePackage({
+      intake: {
+        id: (i as any).id,
+        clientName: (i as any).clientName,
+        narrative: (i as any).narrative,
+        ai: { summary: (i as any).ai?.summary ?? (i as any).aiSummary, classification: (i as any).ai?.classification ?? (i as any).aiClassification, followUps: (i as any).ai?.followUps ?? (i as any).aiFollowUps },
+        sol: { expiryDate: (i as any).sol?.expiryDate ?? (i as any).solExpiryDate, badge: (i as any).sol?.badge ?? (i as any).solBadge, basis: (i as any).sol?.basis ?? (i as any).solBasis, disclaimer: (i as any).sol?.disclaimer ?? (i as any).solDisclaimer, version: (i as any).sol?.version, disclaimerVersion: (i as any).sol?.disclaimerVersion },
+      },
+      recipientEmail,
+    });
+    if ((result as any).ok) {
+      try { await audit(req, 'intake.email_package.sent', { entityType: 'Intake', entityId: id }); } catch {}
+      return res.json({ ok: true });
+    }
+    return errors.internal(res, req, 'Failed to send intake package', { detail: (result as any).error });
+  } catch (e: any) {
+    return errors.internal(res, req, 'Failed to send intake package', { detail: String(e?.message || e) });
+  }
+});
 export default router;
 
 // Update AI summary (editable in dashboard)
