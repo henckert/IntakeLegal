@@ -49,8 +49,8 @@ const app = express();
 const allowedOrigins = [ENV.APP_BASE_URL,'http://localhost:3000','http://127.0.0.1:3000'].filter(Boolean);
 app.use(cors({ origin: (origin, cb) => { if (!origin) return cb(null,true); if (allowedOrigins.includes(origin)) return cb(null,true); cb(new Error(`CORS policy: origin ${origin} not allowed`)); }, credentials: true, allowedHeaders: ['Content-Type','Authorization'], methods: ['GET','POST','PUT','DELETE','OPTIONS'] }));
 const uploadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many upload requests, please try again later.' }, standardHeaders: true, legacyHeaders: false });
-app.use(express.json({ type: ['application/json','application/*+json'], limit: '1mb' }));
 app.use(requestIdMiddleware);
+app.use(express.json({ type: ['application/json','application/*+json'], limit: '1mb' }));
 app.get('/health', (_req, res) => { res.status(200).json({ ok: true, ts: new Date().toISOString(), commit: getCommitHash(), sol: { defaultVersion: getSolDefaultVersion(), disclaimerVersion: DISCLAIMER_VERSION }, ai: { promptVersion: getPromptVersion() } }); });
 
 // Debug endpoint to show active handles (timers, sockets, etc.)

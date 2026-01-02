@@ -43,7 +43,7 @@ router.post('/api/intake/:slug/submit', limitAiPerFirmUser, aiConsentGate, async
       area: 'Personal Injury',
       limitation: { expires: '2026-01-01', daysRemaining: 365 },
       received: body,
-      meta: { dryRun: true, durMs: Date.now() - t0 }
+      meta: { dryRun: true, aiSkipped: true, durMs: Date.now() - t0 }
     });
   }
 

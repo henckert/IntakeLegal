@@ -7,6 +7,9 @@
 
 import { spawn } from 'child_process';
 import { connect } from 'net';
+import fs from 'fs';
+
+const AUDIT_LOG_FILE = 'artifacts/test-audit.jsonl';
 
 const PORT = 4000;
 const MAX_WAIT_SECONDS = 30;
@@ -64,13 +67,18 @@ async function fetchJSON(url, acceptableStatuses = [200], options = {}) {
  */
 async function main() {
   console.log('[test-server] Starting server...');
+
+  // Deterministic audit file for cross-process verification
+  try { fs.mkdirSync('artifacts', { recursive: true }); } catch {}
+  try { fs.unlinkSync(AUDIT_LOG_FILE); } catch {}
+  process.env.AUDIT_LOG_FILE = AUDIT_LOG_FILE;
   
   // Spawn the dev server as a detached child process
   const serverProcess = spawn('npm', ['--workspace', 'server', 'run', 'dev'], {
     stdio: 'ignore', // Don't pipe output to avoid buffer issues
     detached: false, // Keep in same process group for easy cleanup
     shell: true, // Use shell for cross-platform npm resolution
-    env: { ...process.env, FORCE_MOCK_AI: 'true' },
+    env: { ...process.env, FORCE_MOCK_AI: 'true', AUDIT_LOG_FILE },
   });
 
   let exitCode = 1;
