@@ -1,4 +1,7 @@
 import { PassThrough } from 'stream';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
 import { sendIntakePDF } from '../src/services/pdf.js';
 
 class MockRes extends PassThrough {
@@ -39,6 +42,27 @@ async function renderToBuffer(): Promise<{ buf: Buffer; headers: Record<string, 
 
 (async () => {
   const { buf, headers, durMs } = await renderToBuffer();
+
+  // Always emit artifact for manual inspection (fixture-only content)
+  const artifactsDir = path.join(process.cwd(), 'artifacts');
+  const outPdfPath = path.join(artifactsDir, 'pdf-test-output.pdf');
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(outPdfPath, buf);
+  const first16 = buf.subarray(0, 16).toString('utf8');
+  console.error('[pdf.spec] bufferByteLength:', buf.length);
+  console.error('[pdf.spec] first16BytesUtf8:', JSON.stringify(first16));
+  console.error('[pdf.spec] pdfFilePath:', outPdfPath);
+  console.error('[pdf.spec] pdfFileExists:', fs.existsSync(outPdfPath));
+
+  if (!buf.subarray(0, 5).toString('utf8').startsWith('%PDF-')) {
+    console.error('PDF buffer does not begin with %PDF-');
+    process.exit(1);
+  }
+  if (buf.length <= 3000) {
+    console.error('PDF buffer too small; expected > 3000 bytes, got', buf.length);
+    process.exit(1);
+  }
+
   if (!headers['content-type'] || !String(headers['content-type']).includes('application/pdf')) {
     console.error('Expected application/pdf content-type header');
     process.exit(1);
@@ -51,7 +75,22 @@ async function renderToBuffer(): Promise<{ buf: Buffer; headers: Record<string, 
     console.error('PDF generation too slow; expected <3000ms, got', durMs);
     process.exit(1);
   }
-  const txt = buf.toString('utf8');
+
+  const require = createRequire(import.meta.url);
+  const pdfParseAny = require('pdf-parse');
+  const PDFParse = pdfParseAny?.PDFParse;
+  if (typeof PDFParse !== 'function') throw new Error('pdf-parse PDFParse class not found');
+  const parser = new PDFParse(new Uint8Array(buf));
+  await parser.load();
+  const parsed = await parser.getText();
+  const txt = String(parsed?.text || '');
+
+  const page1Text = String(parsed?.pages?.[0]?.text || '');
+  if (!page1Text.includes('Intake Summary')) {
+    console.error('[pdf.spec] Page 1 text did not include "Intake Summary"');
+    console.error('[pdf.spec] page1Preview:', JSON.stringify(page1Text.slice(0, 800)));
+    process.exit(1);
+  }
   const mustContain = [
     'Intake Summary',
     'Client: Jane Doe',
@@ -62,6 +101,17 @@ async function renderToBuffer(): Promise<{ buf: Buffer; headers: Record<string, 
   ];
   for (const s of mustContain) {
     if (!txt.includes(s)) {
+      try {
+        console.error('[pdf.spec] PDF written to:', outPdfPath);
+      } catch (e) {
+        console.error('[pdf.spec] Failed to write PDF artifact:', String((e as any)?.message || e));
+      }
+
+      console.error('[pdf.spec] extractedTextLength:', txt.length);
+      console.error('[pdf.spec] extractedTextPreview:', JSON.stringify(txt.slice(0, 800)));
+      console.error('[pdf.spec] contains("Intake Summary"):', txt.includes('Intake Summary'));
+      console.error('[pdf.spec] contains("Attachments Reviewed"):', txt.includes('Attachments Reviewed'));
+      console.error('[pdf.spec] contains("AI-generated, to be checked by a solicitor"):', txt.includes('AI-generated, to be checked by a solicitor'));
       console.error('Missing expected text in PDF:', s);
       process.exit(1);
     }
